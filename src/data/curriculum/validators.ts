@@ -659,17 +659,26 @@ export function validateAllCPEntries(entries: MasterCPEntry[] = ALL_MASTER_CP_EN
           const cpA = group[i];
           const cpB = group[j];
 
-          const startA = cpA.effectiveFrom || '1970-01-01';
-          const endA = cpA.effectiveUntil || '9999-12-31';
-          const startB = cpB.effectiveFrom || '1970-01-01';
-          const endB = cpB.effectiveUntil || '9999-12-31';
+          const ayFromA = cpA.implementationFromAcademicYear
+            ? parseInt(cpA.implementationFromAcademicYear.match(/\d{4}/)?.[0] || '0', 10)
+            : (cpA.effectiveFrom ? parseInt(cpA.effectiveFrom.slice(0, 4), 10) : -Infinity);
+          const ayUntilA = cpA.implementationUntilAcademicYear
+            ? parseInt(cpA.implementationUntilAcademicYear.match(/\d{4}/)?.[0] || '9999', 10)
+            : (cpA.effectiveUntil ? parseInt(cpA.effectiveUntil.slice(0, 4), 10) : Infinity);
 
-          const overlaps = startA <= endB && startB <= endA;
+          const ayFromB = cpB.implementationFromAcademicYear
+            ? parseInt(cpB.implementationFromAcademicYear.match(/\d{4}/)?.[0] || '0', 10)
+            : (cpB.effectiveFrom ? parseInt(cpB.effectiveFrom.slice(0, 4), 10) : -Infinity);
+          const ayUntilB = cpB.implementationUntilAcademicYear
+            ? parseInt(cpB.implementationUntilAcademicYear.match(/\d{4}/)?.[0] || '9999', 10)
+            : (cpB.effectiveUntil ? parseInt(cpB.effectiveUntil.slice(0, 4), 10) : Infinity);
+
+          const overlaps = ayFromA <= ayUntilB && ayFromB <= ayUntilA;
           if (overlaps) {
             allIssues.push({
               ruleId: cpA.id,
               field: 'effectivePeriod',
-              message: `Overlapping active CP terdeteksi untuk kunci ${key}: CP '${cpA.id}' dan '${cpB.id}' memiliki periode berlaku aktif yang saling tumpang tindih.`,
+              message: `Overlapping active CP terdeteksi untuk kunci ${key}: CP '${cpA.id}' (${cpA.implementationFromAcademicYear || 'any'}-${cpA.implementationUntilAcademicYear || 'open'}) dan '${cpB.id}' (${cpB.implementationFromAcademicYear || 'any'}-${cpB.implementationUntilAcademicYear || 'open'}) memiliki periode berlaku aktif yang saling tumpang tindih.`,
               severity: 'ERROR',
             });
           }

@@ -35,6 +35,59 @@ export interface CPResolutionResult {
 }
 
 /**
+ * Helper to parse starting integer year from academic year string, e.g. "2025/2026" -> 2025
+ */
+export function parseAcademicYearStart(ay?: string | null): number | null {
+  if (!ay) return null;
+  const match = ay.match(/(\d{4})/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+/**
+ * Memeriksa apakah suatu tahun ajaran target masuk dalam masa berlaku CP.
+ * Menggunakan semantik murni tahun ajaran (academic year range) tanpa konversi tanggal sintetis (seperti 1 Juli).
+ */
+export function isCPApplicableForAcademicYear(
+  cp: MasterCPEntry,
+  targetAcademicYear: string
+): boolean {
+  const targetYear = parseAcademicYearStart(targetAcademicYear);
+  if (targetYear === null) return false;
+
+  // 1. Cek batas awal tahun ajaran implementasi
+  if (cp.implementationFromAcademicYear) {
+    const fromYear = parseAcademicYearStart(cp.implementationFromAcademicYear);
+    if (fromYear !== null && targetYear < fromYear) {
+      return false;
+    }
+  } else if (cp.effectiveFrom) {
+    const fromYear = parseInt(cp.effectiveFrom.slice(0, 4), 10);
+    if (!isNaN(fromYear) && targetYear < fromYear) {
+      return false;
+    }
+  }
+
+  // 2. Cek batas akhir tahun ajaran implementasi (jika null, berarti berlaku terus/open-ended hingga digantikan)
+  if (cp.implementationUntilAcademicYear) {
+    const untilYear = parseAcademicYearStart(cp.implementationUntilAcademicYear);
+    if (untilYear !== null && targetYear > untilYear) {
+      return false;
+    }
+  } else if (cp.effectiveUntil) {
+    const untilYear = parseInt(cp.effectiveUntil.slice(0, 4), 10);
+    if (!isNaN(untilYear)) {
+      const isMidYearOrEarly = cp.effectiveUntil.slice(5) <= '06-30';
+      const maxApplicableStartYear = isMidYearOrEarly ? untilYear - 1 : untilYear;
+      if (targetYear > maxApplicableStartYear) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/**
  * Menyelesaikan Capaian Pembelajaran resmi berdasarkan mata pelajaran dan fase.
  * Mencegah pengembalian kandidat pertama saat terjadi ambiguitas (status AMBIGUOUS jika > 1).
  * Mendukung baik pemanggilan dengan positional arguments maupun options object.
@@ -103,35 +156,21 @@ export function resolveCPContext(
   let candidates: MasterCPEntry[] = [];
 
   if (academicYear) {
-    const yearMatch = academicYear.match(/\d{4}/);
-    const startYear = yearMatch ? parseInt(yearMatch[0], 10) : null;
-    if (startYear) {
-      const yearDate = `${startYear}-07-01`;
-      candidates = baseCandidates.filter((cp) => {
-        const from = cp.effectiveFrom || '1970-01-01';
-        const until = cp.effectiveUntil || '9999-12-31';
-
-        // 1. Cek kesesuaian rentang tanggal berlaku
-        const inDateRange = from <= yearDate && yearDate <= until;
-        if (inDateRange) {
-          return true;
-        }
-
-        // 2. Jika tidak ada batasan tanggal eksplisit, gunakan implementationFromAcademicYear
-        if (!cp.effectiveFrom && !cp.effectiveUntil && cp.implementationFromAcademicYear) {
-          return cp.implementationFromAcademicYear === academicYear;
-        }
-
-        return false;
-      });
-    }
-  } else {
-    // Tanpa filter tahun ajaran spesifik: hanya ambil kandidat yang aktif saat ini (tidak superseded dan belum kedaluwarsa)
-    candidates = baseCandidates.filter((c) => {
-      if (c.verificationStatus === 'SUPERSEDED') return false;
-      if (c.effectiveUntil && c.effectiveUntil < '2026-07-01') return false;
-      return true;
+    candidates = baseCandidates.filter((cp) => {
+      return isCPApplicableForAcademicYear(cp, academicYear);
     });
+  } else {
+    // Tanpa filter tahun ajaran spesifik: utamakan kandidat yang aktif dan open-ended
+    const openEnded = baseCandidates.filter(
+      (c) => c.verificationStatus !== 'SUPERSEDED' && !c.implementationUntilAcademicYear
+    );
+    if (openEnded.length === 1) {
+      candidates = openEnded;
+    } else if (openEnded.length > 1) {
+      candidates = openEnded;
+    } else {
+      candidates = baseCandidates.filter((c) => c.verificationStatus !== 'SUPERSEDED');
+    }
   }
 
   if (candidates.length === 1) {

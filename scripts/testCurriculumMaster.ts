@@ -1017,6 +1017,18 @@ async function runCurriculumMasterTests() {
     'PJOK 2026/2027 tetap teresolusi ke CP BSKAP 046/2025 (020/2026 tidak menggantikan CP PJOK)'
   );
 
+  const pjok2027Res = resolveCPContext({
+    subjectCode: 'PJOK',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2027/2028',
+  });
+  assert(
+    pjok2027Res.status === 'RESOLVED' &&
+      pjok2027Res.entry?.regulationSourceId === 'DEC-BSKAP-046-2025',
+    'PJOK 2027/2028 tetap teresolusi ke CP BSKAP 046/2025 (open-ended hingga regulasi baru)'
+  );
+
   const mat2026Res = resolveCPContext({
     subjectCode: 'MAT',
     phase: 'A',
@@ -1041,31 +1053,86 @@ async function runCurriculumMasterTests() {
     '020/2026 tidak menggantikan CP Bahasa Indonesia (tetap menggunakan regulasi non-agama yang berlaku)'
   );
 
-  // TEST 33: Religion CP Versioning (PAI 2025/2026 vs 2026/2027)
-  console.log('\n--- 33. Religion CP Versioning (PAI 2025/2026 vs 2026/2027) ---');
-  const pai2025Res = resolveCPContext({
-    subjectCode: 'PAI',
-    phase: 'A',
-    level: 'SD',
-    academicYear: '2025/2026',
-  });
-  assert(
-    pai2025Res.status === 'RESOLVED' &&
-      pai2025Res.entry?.regulationSourceId === 'DEC-BSKAP-046-2025',
-    'PAI 2025/2026 teresolusi ke CP BSKAP 046/2025'
-  );
+  // TEST 33: Religion CP Versioning (2025/2026 vs 2026/2027 across all religions)
+  console.log('\n--- 33. Religion CP Versioning (2025/2026 vs 2026/2027) ---');
+  const religionCodes = ['PAI', 'PAK', 'PKAT', 'PHINDU', 'PBUDDHA', 'PKHONGHUCU'];
 
-  const pai2026Res = resolveCPContext({
-    subjectCode: 'PAI',
-    phase: 'A',
-    level: 'SD',
-    academicYear: '2026/2027',
-  });
-  assert(
-    pai2026Res.status === 'RESOLVED' &&
-      pai2026Res.entry?.regulationSourceId === 'DEC-BKPDM-020-2026',
-    'PAI 2026/2027 teresolusi ke CP BKPDM 020/2026'
-  );
+  for (const relCode of religionCodes) {
+    // SD Fase A
+    const sdRel2025 = resolveCPContext({
+      subjectCode: relCode,
+      phase: 'A',
+      level: 'SD',
+      academicYear: '2025/2026',
+    });
+    assert(
+      sdRel2025.status === 'RESOLVED' &&
+        sdRel2025.entry?.regulationSourceId === 'DEC-BSKAP-046-2025',
+      `SD Fase A ${relCode} 2025/2026 teresolusi ke CP BSKAP 046/2025`
+    );
+
+    const sdRel2026 = resolveCPContext({
+      subjectCode: relCode,
+      phase: 'A',
+      level: 'SD',
+      academicYear: '2026/2027',
+    });
+    assert(
+      sdRel2026.status === 'RESOLVED' &&
+        sdRel2026.entry?.regulationSourceId === 'DEC-BKPDM-020-2026',
+      `SD Fase A ${relCode} 2026/2027 teresolusi ke CP BKPDM 020/2026`
+    );
+
+    // SMP Fase D
+    const smpRel2025 = resolveCPContext({
+      subjectCode: relCode,
+      phase: 'D',
+      level: 'SMP',
+      academicYear: '2025/2026',
+    });
+    assert(
+      smpRel2025.status === 'RESOLVED' &&
+        smpRel2025.entry?.regulationSourceId === 'DEC-BSKAP-046-2025',
+      `SMP Fase D ${relCode} 2025/2026 teresolusi ke CP BSKAP 046/2025`
+    );
+
+    const smpRel2026 = resolveCPContext({
+      subjectCode: relCode,
+      phase: 'D',
+      level: 'SMP',
+      academicYear: '2026/2027',
+    });
+    assert(
+      smpRel2026.status === 'RESOLVED' &&
+        smpRel2026.entry?.regulationSourceId === 'DEC-BKPDM-020-2026',
+      `SMP Fase D ${relCode} 2026/2027 teresolusi ke CP BKPDM 020/2026`
+    );
+
+    // SMA Fase E
+    const smaRel2025 = resolveCPContext({
+      subjectCode: relCode,
+      phase: 'E',
+      level: 'SMA',
+      academicYear: '2025/2026',
+    });
+    assert(
+      smaRel2025.status === 'RESOLVED' &&
+        smaRel2025.entry?.regulationSourceId === 'DEC-BSKAP-046-2025',
+      `SMA Fase E ${relCode} 2025/2026 teresolusi ke CP BSKAP 046/2025`
+    );
+
+    const smaRel2026 = resolveCPContext({
+      subjectCode: relCode,
+      phase: 'E',
+      level: 'SMA',
+      academicYear: '2026/2027',
+    });
+    assert(
+      smaRel2026.status === 'RESOLVED' &&
+        smaRel2026.entry?.regulationSourceId === 'DEC-BKPDM-020-2026',
+      `SMA Fase E ${relCode} 2026/2027 teresolusi ke CP BKPDM 020/2026`
+    );
+  }
 
   // TEST 34: CP Validator Enforcement
   console.log('\n--- 34. CP Validator Enforcement ---');

@@ -12,9 +12,8 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'E',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-046-2025',
-    effectiveFrom: '2025-07-01',
-    effectiveUntil: '2026-06-30',
     implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
     verificationStatus: 'UNVERIFIED',
     notes:
       'CP PAI dan Budi Pekerti SMA Fase E TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
@@ -54,7 +53,6 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'E',
     level: 'SMA',
     regulationSourceId: 'DEC-BKPDM-020-2026',
-    effectiveFrom: '2026-07-01',
     implementationFromAcademicYear: '2026/2027',
     verificationStatus: 'UNVERIFIED',
     notes:
@@ -86,6 +84,231 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
         name: 'Sejarah Peradaban Islam',
         content:
           'Peserta didik meneladani perjuangan para ulama dan tokoh Islam dalam membangun peradaban dan kebangsaan Indonesia.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sma-fase-e-pak',
+    subjectCode: 'PAK',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Kristen SMA Fase E TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik menganalisis kedewasaan iman, tanggung jawab sosial dan kebangsaan, serta etika Kristiani dalam masyarakat majemuk.',
+    elements: [
+      {
+        name: 'Allah Berkarya',
+        content: 'Peserta didik memahami karya Allah dalam pembaharuan hidup dan panggilan menjadi garam dan terang dunia.',
+      },
+      {
+        name: 'Manusia dan Nilai-nilai Kristiani',
+        content: 'Peserta didik menerapkan nilai-nilai keadilan, perdamaian, dan integritas moral dalam kehidupan bermasyarakat.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sma-fase-e-pak',
+    subjectCode: 'PAK',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Kristen SMA Fase E berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik merefleksikan iman Kristiani dalam konteks kebangsaan, HAM, keadilan sosial, dan kelestarian ekologis.',
+    elements: [
+      {
+        name: 'Allah Berkarya',
+        content: 'Peserta didik menghayati karya pembebasan dan pemulihan Allah bagi seluruh ciptaan.',
+      },
+      {
+        name: 'Manusia dan Nilai-nilai Kristiani',
+        content: 'Peserta didik menjadi agen pembawa damai dan keadilan di tengah masyarakat pluralis.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sma-fase-e-pkat',
+    subjectCode: 'PKAT',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Katolik SMA Fase E TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik memahami panggilan hidupnya sebagai pribadi yang unik, menghayati misteri Yesus Kristus, dan menghayati Ajaran Sosial Gereja.',
+    elements: [
+      {
+        name: 'Pribadi Peserta Didik',
+        content: 'Peserta didik mengenali suara hati dan mengembangkan potensi diri demi kebaikan bersama.',
+      },
+      {
+        name: 'Yesus Kristus dan Masyarakat',
+        content: 'Peserta didik menghidupi semangat Kerajaan Allah dan membela martabat hidup manusia.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sma-fase-e-pkat',
+    subjectCode: 'PKAT',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Katolik SMA Fase E berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik memperdalam refleksi iman kristiani dalam membina dialog ekumenis, persaudaraan universal, dan keadilan ekologis.',
+    elements: [
+      {
+        name: 'Pribadi Peserta Didik',
+        content: 'Peserta didik mengembangkan spiritualitas kristiani yang kritis dan berpihak pada kaum tertindas.',
+      },
+      {
+        name: 'Yesus Kristus dan Masyarakat',
+        content: 'Peserta didik terlibat aktif dalam gerakan moral menjaga keutuhan ciptaan (Laudato Si\').',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sma-fase-e-phindu',
+    subjectCode: 'PHINDU',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Hindu SMA Fase E TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik menganalisis ajaran Moksha, Dharma Sastra, nilai-nilai Yajna, dan kepemimpinan Hindu (Asta Brata).',
+    elements: [
+      {
+        name: 'Sraddha dan Bhakti',
+        content: 'Peserta didik menganalisis jalan mencapai pembebasan spiritual (Moksha) melalui Catur Marga Yoga.',
+      },
+      {
+        name: 'Susila dan Dharma',
+        content: 'Peserta didik menerapkan nilai-nilai kepemimpinan Asta Brata dan Catur Kotika.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sma-fase-e-phindu',
+    subjectCode: 'PHINDU',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Hindu SMA Fase E berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik mengaktualisasikan kearifan Veda dalam menjaga kerukunan, keselarasan lingkungan, dan peradaban global.',
+    elements: [
+      {
+        name: 'Sraddha dan Bhakti',
+        content: 'Peserta didik mengintegrasikan pemikiran filsafat Tattwa dan Darsana dalam penguatan karakter.',
+      },
+      {
+        name: 'Susila dan Dharma',
+        content: 'Peserta didik mewujudkan ajaran Vasudhaiva Kutumbakam dalam kehidupan bermasyarakat.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sma-fase-e-pbuddha',
+    subjectCode: 'PBUDDHA',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Buddha SMA Fase E TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik menganalisis filsafat Abhidhamma, Hukum Kesunyataan, serta peranan umat Buddha dalam perdamaian dunia.',
+    elements: [
+      {
+        name: 'Dhamma dan Kebijaksanaan',
+        content: 'Peserta didik memahami konsep Anatta, Kamma, dan hukum Niyama.',
+      },
+      {
+        name: 'Meditasi Vipassana',
+        content: 'Peserta didik mempraktikkan meditasi pandangan terang (Vipassana Bhavana) untuk kejernihan batin.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sma-fase-e-pbuddha',
+    subjectCode: 'PBUDDHA',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Buddha SMA Fase E berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik mengembangkan kearifan Buddha Dhamma dalam menyelesaikan konflik sosial dan mempromosikan perdamaian.',
+    elements: [
+      {
+        name: 'Dhamma dan Kebijaksanaan',
+        content: 'Peserta didik menganalisis relevansi ajaran Buddha terhadap etika modern dan kelestarian biosfer.',
+      },
+      {
+        name: 'Meditasi Vipassana',
+        content: 'Peserta didik menginternalisasikan mindfulness (Sati) dalam pengambilan keputusan etis.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sma-fase-e-pkhonghucu',
+    subjectCode: 'PKHONGHUCU',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Khonghucu SMA Fase E TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik menganalisis ajaran Zhong Yong (Tengah Sempurna), pembinaan diri (Xiu Shen), dan tata negara yang berkeadaban.',
+    elements: [
+      {
+        name: 'Kitab Suci dan Filsafat',
+        content: 'Peserta didik mendalami ajaran Zhong Yong dan Kitab Mengzi.',
+      },
+      {
+        name: 'Pembinaan Diri Junzi',
+        content: 'Peserta didik mempraktikkan kebajikan luhur dalam kepemimpinan dan keluarga.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sma-fase-e-pkhonghucu',
+    subjectCode: 'PKHONGHUCU',
+    phase: 'E',
+    level: 'SMA',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Khonghucu SMA Fase E berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase E, peserta didik menghayati makna hidup berdampingan secara harmonis (He Er Bu Tong) dan membangun masyarakat damai sejahtera (Da Tong).',
+    elements: [
+      {
+        name: 'Kitab Suci dan Filsafat',
+        content: 'Peserta didik merefleksikan nilai-nilai moralitas klasik dalam mengatasi persoalan kemanusiaan kontemporer.',
+      },
+      {
+        name: 'Pembinaan Diri Junzi',
+        content: 'Peserta didik mewujudkan cita-cita perdamaian dunia berlandaskan kebajikan Ren dan Li.',
       },
     ],
   },

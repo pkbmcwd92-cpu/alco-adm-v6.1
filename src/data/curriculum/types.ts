@@ -129,6 +129,7 @@ export interface CurriculumCPEntry {
   regulationIds: string[];
   evidence?: CurriculumRuleEvidence[];
   implementationFromAcademicYear?: string | null;
+  implementationUntilAcademicYear?: string | null;
   verificationStatus: VerificationStatus;
   notes?: string;
 }

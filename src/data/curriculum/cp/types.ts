@@ -15,8 +15,9 @@ export interface MasterCPEntry {
   regulationSourceId: string;
   evidence?: CurriculumRuleEvidence[];
   implementationFromAcademicYear?: string | null;
-  effectiveFrom?: string;
-  effectiveUntil?: string;
+  implementationUntilAcademicYear?: string | null;
+  effectiveFrom?: string | null;
+  effectiveUntil?: string | null;
   verificationStatus: VerificationStatus;
   notes?: string;
 }

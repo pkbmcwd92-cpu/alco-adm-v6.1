@@ -21,7 +21,6 @@ export const OFFICIAL_REGULATION_SOURCES: RegulationSource[] = [
       'Badan Standar, Kurikulum, dan Penjaminan Mutu Pendidikan (BKPDM) Kementerian Pendidikan Dasar dan Menengah RI',
     legalEffectiveDate: null,
     implementationFromAcademicYear: '2026/2027',
-    effectiveFrom: '2026-07-01',
     sourceUrl:
       'https://kurikulum.kemdikbud.go.id/unduhan/keputusan-kepala-bkpdm-nomor-020-tahun-2026',
     notes:
@@ -52,7 +51,7 @@ export const OFFICIAL_REGULATION_SOURCES: RegulationSource[] = [
     authority: 'Kementerian Pendidikan Dasar dan Menengah RI',
     legalEffectiveDate: '2025-07-11',
     implementationFromAcademicYear: '2025/2026',
-    effectiveFrom: '2025-07-01',
+    effectiveFrom: '2025-07-11',
     sourceUrl: 'https://jdih.kemdikdasmen.go.id/detail_peraturan?main=13-2025',
     notes:
       'Mengatur pembaruan implementasi Kurikulum Merdeka mulai Tahun Ajaran 2025/2026 dan penambahan Mata Pelajaran Pilihan Koding dan Kecerdasan Artifisial (Coding dan AI) untuk jenjang SD, SMP, dan SMA.',
@@ -67,7 +66,7 @@ export const OFFICIAL_REGULATION_SOURCES: RegulationSource[] = [
     authority: 'Badan Standar, Kurikulum, dan Asesmen Pendidikan (BSKAP) Kemendikdasmen RI',
     legalEffectiveDate: '2025-07-16',
     implementationFromAcademicYear: '2025/2026',
-    effectiveFrom: '2025-07-01',
+    effectiveFrom: '2025-07-16',
     sourceUrl: 'https://kurikulum.kemdikbud.go.id/unduhan/keputusan-kepala-bskap-nomor-046-h-kr-2025',
     notes:
       'Pembaruan Capaian Pembelajaran (CP) 2025 memuat muatan koding dan kecerdasan artifisial serta penyesuaian elemen kompetensi pada jenjang PAUD, Dikdas, dan Dikmen.',
@@ -78,9 +77,8 @@ export const OFFICIAL_REGULATION_SOURCES: RegulationSource[] = [
     year: 2025,
     type: 'OFFICIAL_GUIDE',
     authority: 'BSKAP Kemendikdasmen RI',
-    legalEffectiveDate: '2025-07-01',
+    legalEffectiveDate: null,
     implementationFromAcademicYear: '2025/2026',
-    effectiveFrom: '2025-07-01',
     sourceUrl: 'https://kurikulum.kemdikbud.go.id/unduhan/panduan-pembelajaran-dan-asesmen-2025',
     notes:
       'Panduan resmi perencanaan pembelajaran, alokasi JP efektif, asesmen autentik, dan kriteria ketercapaian tujuan pembelajaran (KKTP) edisi revisi 2025.',
@@ -96,7 +94,6 @@ export const OFFICIAL_REGULATION_SOURCES: RegulationSource[] = [
     legalEffectiveDate: '2024-06-11',
     implementationFromAcademicYear: '2024/2025',
     effectiveFrom: '2024-06-11',
-    effectiveUntil: '2025-06-30',
     sourceUrl: 'https://kurikulum.kemdikbud.go.id/unduhan/keputusan-kepala-bskap-nomor-032-h-kr-2024',
     notes:
       'Regulasi historis penetapan rumusan Capaian Pembelajaran (CP) 2024 untuk Fase Fondasi sampai Fase F. Dimutakhirkan oleh Keputusan Kepala BSKAP No. 046/H/KR/2025.',
@@ -121,10 +118,8 @@ export const OFFICIAL_REGULATION_SOURCES: RegulationSource[] = [
     year: 2024,
     type: 'OFFICIAL_GUIDE',
     authority: 'BSKAP Kemendikbudristek RI',
-    legalEffectiveDate: '2024-06-01',
+    legalEffectiveDate: null,
     implementationFromAcademicYear: '2024/2025',
-    effectiveFrom: '2024-06-01',
-    effectiveUntil: '2025-06-30',
     sourceUrl: 'https://kurikulum.kemdikbud.go.id/unduhan/panduan-pembelajaran-dan-asesmen-2024',
     notes:
       'Petunjuk teknis perencanaan pembelajaran, penyusunan TP/ATP, alokasi waktu, kriteria ketercapaian tujuan pembelajaran (KKTP), dan asesmen formatif/sumatif 2024.',

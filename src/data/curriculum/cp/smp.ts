@@ -11,9 +11,8 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BSKAP-046-2025',
-    effectiveFrom: '2025-07-01',
-    effectiveUntil: '2026-06-30',
     implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
     verificationStatus: 'UNVERIFIED',
     notes:
       'CP PAI dan Budi Pekerti SMP Fase D TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
@@ -53,7 +52,6 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BKPDM-020-2026',
-    effectiveFrom: '2026-07-01',
     implementationFromAcademicYear: '2026/2027',
     verificationStatus: 'UNVERIFIED',
     notes:
@@ -85,6 +83,231 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
         name: 'Sejarah Peradaban Islam',
         content:
           'Peserta didik meneladani kepemimpinan Rasulullah SAW, para sahabat, dan perkembangan peradaban Islam yang rahmatan lil ‘alamin.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-smp-fase-d-pak',
+    subjectCode: 'PAK',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Kristen SMP Fase D TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memahami karya penyelamatan Allah dalam Yesus Kristus, mempraktikkan nilai-nilai Kristiani, dan berperan aktif dalam memelihara kerukunan.',
+    elements: [
+      {
+        name: 'Allah Berkarya',
+        content: 'Peserta didik memahami karya penciptaan, pemeliharaan, dan penyelamatan Allah dalam Yesus Kristus.',
+      },
+      {
+        name: 'Manusia dan Nilai-nilai Kristiani',
+        content: 'Peserta didik mempraktikkan hidup berintegritas, adil, dan mengasihi sesama.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-smp-fase-d-pak',
+    subjectCode: 'PAK',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Kristen SMP Fase D berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memahami iman Kristiani dalam menghadapi tantangan zaman, merawat keadilan sosial, dan menjaga kelestarian ciptaan.',
+    elements: [
+      {
+        name: 'Allah Berkarya',
+        content: 'Peserta didik menghayati karya pembaruan Roh Kudus dalam kehidupan pribadi dan gereja.',
+      },
+      {
+        name: 'Manusia dan Nilai-nilai Kristiani',
+        content: 'Peserta didik mempraktikkan etika Kristiani dan solidaritas kemanusiaan.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-smp-fase-d-pkat',
+    subjectCode: 'PKAT',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Katolik SMP Fase D TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memahami jati dirinya sebagai citra Allah yang unik, mengenal sakramen-sakramen Gereja Katolik, dan meneladani Yesus dalam kehidupan bermasyarakat.',
+    elements: [
+      {
+        name: 'Pribadi Peserta Didik',
+        content: 'Peserta didik mengembangkan talenta dan merawat martabat diri sebagai ciptaan Allah.',
+      },
+      {
+        name: 'Gereja dan Sakramen',
+        content: 'Peserta didik memahami peran Gereja dan makna Sakramen Inisiasi.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-smp-fase-d-pkat',
+    subjectCode: 'PKAT',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Katolik SMP Fase D berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memperdalam iman akan Yesus Kristus, memahami hidup menggereja, serta bersaksi melalui pelayanan cinta kasih.',
+    elements: [
+      {
+        name: 'Pribadi Peserta Didik',
+        content: 'Peserta didik menyadari panggilan hidup kristiani untuk berbuat kasih dan adil.',
+      },
+      {
+        name: 'Gereja dan Sakramen',
+        content: 'Peserta didik aktif berpartisipasi dalam perayaan liturgi dan karya belas kasih Gereja.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-smp-fase-d-phindu',
+    subjectCode: 'PHINDU',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Hindu SMP Fase D TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memahami Panca Sradha, Tri Hita Karana, kitab suci Veda, serta penerapan susila Hindu.',
+    elements: [
+      {
+        name: 'Sraddha dan Bhakti',
+        content: 'Peserta didik mendalami konsep Panca Sradha dan bentuk-bentuk persembahyangan.',
+      },
+      {
+        name: 'Susila dan Acara',
+        content: 'Peserta didik menerapkan Tri Hita Karana dalam memelihara keharmonisan.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-smp-fase-d-phindu',
+    subjectCode: 'PHINDU',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Hindu SMP Fase D berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memperkuat keimanan Hindu, etika kepemimpinan Sad Ripu, dan pelestarian nilai budaya Veda.',
+    elements: [
+      {
+        name: 'Sraddha dan Bhakti',
+        content: 'Peserta didik menghayati ajaran Brahman, Atman, Karmaphala, Punarbhava, dan Moksha.',
+      },
+      {
+        name: 'Susila dan Acara',
+        content: 'Peserta didik mengendalikan Sad Ripu dan menjaga keharmonisan alam semesta.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-smp-fase-d-pbuddha',
+    subjectCode: 'PBUDDHA',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Buddha SMP Fase D TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memahami Empat Kesunyataan Mulia, Delapan Jalan Utama, serta sejarah penyiaran Buddha Dhamma.',
+    elements: [
+      {
+        name: 'Dhamma dan Moralitas',
+        content: 'Peserta didik memahami Empat Kebenaran Mulia dan praktik Jalan Mulia Berunsur Delapan.',
+      },
+      {
+        name: 'Meditasi dan Karakter',
+        content: 'Peserta didik melatih Samatha Bhavana dan ketenangan batin.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-smp-fase-d-pbuddha',
+    subjectCode: 'PBUDDHA',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Buddha SMP Fase D berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik mendalami hukum sebab-akibat (Paticcasamuppada), kebajikan paramita, dan ketenangan pikiran.',
+    elements: [
+      {
+        name: 'Dhamma dan Moralitas',
+        content: 'Peserta didik menerapkan ajaran Kamma dan Tilakkhana dalam kehidupan sosial.',
+      },
+      {
+        name: 'Meditasi dan Karakter',
+        content: 'Peserta didik membiasakan meditasi kesadaran untuk ketahanan mental.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-smp-fase-d-pkhonghucu',
+    subjectCode: 'PKHONGHUCU',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Khonghucu SMP Fase D TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik memahami Kitab Sishu Wujing, ajaran Wu Chang dan Ba De, serta meneladani keteladanan Nabi Kongzi.',
+    elements: [
+      {
+        name: 'Keimanan dan Kitab Suci',
+        content: 'Peserta didik memahami pokok-pokok ajaran Sishu dan keteladanan para Nabi Purba.',
+      },
+      {
+        name: 'Moralitas dan Karakter Junzi',
+        content: 'Peserta didik mempraktikkan Lima Kebajikan Abadi (Wu Chang) dan Delapan Kebajikan (Ba De).',
+      },
+    ],
+  },
+  {
+    id: 'cp26-smp-fase-d-pkhonghucu',
+    subjectCode: 'PKHONGHUCU',
+    phase: 'D',
+    level: 'SMP',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes: 'CP Pendidikan Agama Khonghucu SMP Fase D berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase D, peserta didik mendalami kepribadian Junzi, pengamalan firman Tian (Tian Ming), dan keharmonisan sosial.',
+    elements: [
+      {
+        name: 'Keimanan dan Kitab Suci',
+        content: 'Peserta didik menghayati firman Tian dan menjalankan ibadah dengan tulus (Cheng).',
+      },
+      {
+        name: 'Moralitas dan Karakter Junzi',
+        content: 'Peserta didik melatih pengendalian diri dan menjadi insan berbudi luhur (Junzi).',
       },
     ],
   },

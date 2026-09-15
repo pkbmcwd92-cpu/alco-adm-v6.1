@@ -61,6 +61,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     effectiveFrom: '2024-06-11',
     effectiveUntil: '2025-06-30',
     implementationFromAcademicYear: '2024/2025',
+    implementationUntilAcademicYear: '2024/2025',
     verificationStatus: 'SUPERSEDED',
     notes:
       'CP PJOK Fase A TA 2024/2025 rujukan Keputusan Kepala BSKAP No. 032/H/KR/2024 (telah digantikan oleh Keputusan Kepala BSKAP No. 046/H/KR/2025 untuk TA 2025/2026).',
@@ -95,9 +96,8 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'A',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-046-2025',
-    effectiveFrom: '2025-07-01',
-    effectiveUntil: '2026-06-30',
     implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
     verificationStatus: 'UNVERIFIED',
     notes:
       'CP PAI dan Budi Pekerti SD Fase A TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025 (berlaku hingga digantikan oleh Keputusan BKPDM No. 020 Tahun 2026).',
@@ -137,7 +137,6 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'A',
     level: 'SD',
     regulationSourceId: 'DEC-BKPDM-020-2026',
-    effectiveFrom: '2026-07-01',
     implementationFromAcademicYear: '2026/2027',
     verificationStatus: 'UNVERIFIED',
     notes:
@@ -169,6 +168,261 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
         name: 'Sejarah Peradaban Islam',
         content:
           'Peserta didik meneladani kisah masa kecil Nabi Muhammad SAW.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sd-fase-a-pak',
+    subjectCode: 'PAK',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Kristen Fase A TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal kasih Allah melalui ciptaan, keluarga, dan lingkungan, serta mempraktikkan hidup rukun dan bersyukur.',
+    elements: [
+      {
+        name: 'Allah Berkarya',
+        content:
+          'Peserta didik memahami bahwa Allah menciptakan dirinya dan memelihara kehidupannya.',
+      },
+      {
+        name: 'Manusia dan Nilai-nilai Kristiani',
+        content:
+          'Peserta didik mempraktikkan sikap saling mengasihi dan menghormati sesama.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sd-fase-a-pak',
+    subjectCode: 'PAK',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Kristen Fase A berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik memahami pemeliharaan Allah dalam keluarga dan sesama serta menerapkan nilai-nilai kasih dalam keseharian.',
+    elements: [
+      {
+        name: 'Allah Berkarya',
+        content:
+          'Peserta didik meyakini Allah memelihara dirinya, keluarga, dan alam sekitar.',
+      },
+      {
+        name: 'Manusia dan Nilai-nilai Kristiani',
+        content:
+          'Peserta didik mempraktikkan hidup jujur, santun, dan peduli sesama.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sd-fase-a-pkat',
+    subjectCode: 'PKAT',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Katolik Fase A TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal diri sebagai anugerah Allah, mengenal pribadi Yesus Kristus, dan membiasakan doa harian.',
+    elements: [
+      {
+        name: 'Pribadi Peserta Didik',
+        content:
+          'Peserta didik mengenal dirinya unik sebagai ciptaan Allah.',
+      },
+      {
+        name: 'Yesus Kristus',
+        content:
+          'Peserta didik mengenal kisah kelahiran dan karya kasih Yesus Kristus.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sd-fase-a-pkat',
+    subjectCode: 'PKAT',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Katolik Fase A berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik menyadari kehadiran Allah dalam hidup sehari-hari, meneladani Yesus Kristus, dan hidup bersaudara dengan sesama.',
+    elements: [
+      {
+        name: 'Pribadi Peserta Didik',
+        content:
+          'Peserta didik menerima diri dan bersyukur atas anugerah kehidupan dari Allah.',
+      },
+      {
+        name: 'Yesus Kristus',
+        content:
+          'Peserta didik meneladani cinta kasih Yesus dalam perbuatan sehari-hari.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sd-fase-a-phindu',
+    subjectCode: 'PHINDU',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Hindu Fase A TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal Hyang Widhi Wasa, Tri Kaya Parisudha, serta doa-doa harian sederhana.',
+    elements: [
+      {
+        name: 'Sraddha dan Bhakti',
+        content:
+          'Peserta didik mengenal Hyang Widhi Wasa sebagai pencipta alam semesta beserta isinya.',
+      },
+      {
+        name: 'Susila',
+        content:
+          'Peserta didik menerapkan ajaran Tri Kaya Parisudha dalam ucapan dan perbuatan baik.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sd-fase-a-phindu',
+    subjectCode: 'PHINDU',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Hindu Fase A berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal keagungan Hyang Widhi Wasa, mempraktikkan etika susila Hindu, dan menjaga keharmonisan.',
+    elements: [
+      {
+        name: 'Sraddha dan Bhakti',
+        content:
+          'Peserta didik memahami kebesaran Hyang Widhi Wasa melalui ciptaan-Nya.',
+      },
+      {
+        name: 'Susila',
+        content:
+          'Peserta didik membiasakan budi pekerti luhur dan perilaku kasih.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sd-fase-a-pbuddha',
+    subjectCode: 'PBUDDHA',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Buddha Fase A TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal Triratna, kisah Pangeran Siddharta, serta nilai-nilai moralitas dasar (Pancasila Buddhis).',
+    elements: [
+      {
+        name: 'Sejarah dan Tokoh',
+        content:
+          'Peserta didik mengenal riwayat kelahiran Pangeran Siddharta.',
+      },
+      {
+        name: 'Moralitas dan Meditasi',
+        content:
+          'Peserta didik mempraktikkan kasih sayang kepada semua makhluk dan ketenangan pikiran sederhana.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sd-fase-a-pbuddha',
+    subjectCode: 'PBUDDHA',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Buddha Fase A berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal Triratna, keteladanan Buddha, dan melatih sikap penuh cinta kasih.',
+    elements: [
+      {
+        name: 'Sejarah dan Tokoh',
+        content:
+          'Peserta didik meneladani sifat luhur Pangeran Siddharta sejak masa kecil.',
+      },
+      {
+        name: 'Moralitas dan Meditasi',
+        content:
+          'Peserta didik membiasakan perilaku santun, tidak menyakiti makhluk hidup, dan melatih konsentrasi.',
+      },
+    ],
+  },
+  {
+    id: 'cp25-sd-fase-a-pkhonghucu',
+    subjectCode: 'PKHONGHUCU',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: '2025/2026',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Khonghucu Fase A TA 2025/2026 berbasis Keputusan Kepala BSKAP No. 046/H/KR/2025.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik mengenal Tian, Nabi Kongzi, dan kebajikan dasar (Ren dan Li) dalam keluarga.',
+    elements: [
+      {
+        name: 'Keimanan dan Karakter',
+        content:
+          'Peserta didik mengenal kebesaran Tian dan menunjukkan bakti kepada orang tua (Xiao).',
+      },
+      {
+        name: 'Tata Krama dan Ibadah',
+        content:
+          'Peserta didik mempraktikkan sikap hormat, salam, dan doa sederhana Khonghucu.',
+      },
+    ],
+  },
+  {
+    id: 'cp26-sd-fase-a-pkhonghucu',
+    subjectCode: 'PKHONGHUCU',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BKPDM-020-2026',
+    implementationFromAcademicYear: '2026/2027',
+    verificationStatus: 'UNVERIFIED',
+    notes:
+      'CP Pendidikan Agama Khonghucu Fase A berdasarkan Keputusan Kepala BKPDM Nomor 020 Tahun 2026.',
+    generalDescription:
+      'Pada akhir Fase A, peserta didik memahami bakti kepada orang tua, mengenal riwayat Nabi Kongzi, dan mempraktikkan tata krama mulia.',
+    elements: [
+      {
+        name: 'Keimanan dan Karakter',
+        content:
+          'Peserta didik menerapkan prinsip kebajikan Ren dan bakti dalam keluarga.',
+      },
+      {
+        name: 'Tata Krama dan Ibadah',
+        content:
+          'Peserta didik mempraktikkan kesantunan Li dalam kehidupan sekolah dan rumah.',
       },
     ],
   },
