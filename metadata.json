@@ -1,0 +1,8 @@
+{
+  "name": " Adm Guru Ai v6.1",
+  "description": "Aplikasi penyusun administrasi pembelajaran bertahap untuk guru: Profil, CP, TP, ATP, hingga ekspor dokumen Word resmi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
