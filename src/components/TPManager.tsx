@@ -17,14 +17,25 @@ import {
   Wand2,
   ShieldCheck,
   AlertTriangle,
+  Brain,
+  Layers,
 } from 'lucide-react';
-import { TPData, TPItem, CPData, AcademicSetting, TeacherProfile, ActiveContext } from '../types';
+import {
+  TPData,
+  TPItem,
+  CPData,
+  CPAnalysisData,
+  AcademicSetting,
+  TeacherProfile,
+  ActiveContext,
+} from '../types';
 import { P3_DIMENSIONS } from '../data/curriculumDefaults';
 import { generateTPWithAI, refineTextWithAI } from '../services/aiService';
 
 interface TPManagerProps {
   tp: TPData;
   cp: CPData;
+  cpAnalysis?: CPAnalysisData;
   context: ActiveContext;
   academicSetting: AcademicSetting;
   profile: TeacherProfile;
@@ -36,6 +47,7 @@ interface TPManagerProps {
 export const TPManager: React.FC<TPManagerProps> = ({
   tp,
   cp,
+  cpAnalysis,
   context,
   academicSetting,
   profile,
@@ -61,7 +73,9 @@ export const TPManager: React.FC<TPManagerProps> = ({
     (cp.generalDescription && cp.generalDescription.trim().length > 0) ||
     (cp.elements && cp.elements.length > 0);
 
-  // Integrity check: CP changed after TP was created
+  const hasCPAnalysis = !!(cpAnalysis?.items && cpAnalysis.items.length > 0);
+
+  // Integrity checks for stale upstream
   const isCPOutdated =
     hasCP &&
     items.length > 0 &&
@@ -69,7 +83,55 @@ export const TPManager: React.FC<TPManagerProps> = ({
     cp.updatedAt &&
     new Date(cp.updatedAt).getTime() > new Date(tp.basedOnCpUpdatedAt).getTime() + 1000;
 
-  // Handle AI Generate TP from CP
+  const isAnalysisOutdated =
+    hasCPAnalysis &&
+    items.length > 0 &&
+    tp.basedOnAnalysisUpdatedAt &&
+    cpAnalysis?.updatedAt &&
+    new Date(cpAnalysis.updatedAt).getTime() > new Date(tp.basedOnAnalysisUpdatedAt).getTime() + 1000;
+
+  // Import directly from CP Analysis suggested TP
+  const handleImportFromCPAnalysis = () => {
+    if (!hasCPAnalysis || !cpAnalysis?.items) {
+      alert('Data Analisis CP belum tersedia.');
+      return;
+    }
+
+    if (
+      items.length > 0 &&
+      !confirm('Menerapkan rumusan dari Analisis CP akan menggantikan daftar TP saat ini. Lanjutkan?')
+    ) {
+      return;
+    }
+
+    const gradeNum = context.grade.replace(/[^0-9]/g, '') || '4';
+    const imported: TPItem[] = cpAnalysis.items.map((ana, idx) => ({
+      id: `tp-ana-${Date.now()}-${idx + 1}`,
+      cpAnalysisId: ana.id,
+      code: `TP ${gradeNum}.${idx + 1}`,
+      elementName: ana.elementName || 'Umum',
+      statement: ana.suggestedTp || `Peserta didik mampu ${ana.cpCompetence || 'memahami'} ${ana.materialScope || 'materi pokok'}.`,
+      competence: ana.cpCompetence || 'Memahami',
+      contentScope: ana.materialScope || 'Materi Pokok',
+      p3Dimensions: ['Bernalar Kritis', 'Mandiri'],
+      order: idx + 1,
+    }));
+
+    setItems(imported);
+    const updated: TPData = {
+      ...tp,
+      academicSettingId: academicSetting.id,
+      items: imported,
+      basedOnCpUpdatedAt: cp.updatedAt || new Date().toISOString(),
+      basedOnAnalysisUpdatedAt: cpAnalysis.updatedAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    onSaveTP(updated);
+    setSaveNotice(true);
+    setTimeout(() => setSaveNotice(false), 2500);
+  };
+
+  // Handle AI Generate TP from CP + CP Analysis
   const handleGenerateAI = async () => {
     if (!hasCP) {
       alert('Data CP belum tersedia. Harap isi CP pada tahap 03 terlebih dahulu.');
@@ -92,11 +154,12 @@ export const TPManager: React.FC<TPManagerProps> = ({
       const generated = await generateTPWithAI({
         cpGeneral: cp.generalDescription,
         cpElements: cp.elements || [],
+        cpAnalysis: cpAnalysis?.items,
         subject: context.subject,
         grade: context.grade,
         phase: context.phase,
         curriculum: context.curriculum,
-        count: 4,
+        count: cpAnalysis?.items?.length ? Math.max(cpAnalysis.items.length, 4) : 4,
       });
 
       setItems(generated);
@@ -106,6 +169,7 @@ export const TPManager: React.FC<TPManagerProps> = ({
         academicSettingId: academicSetting.id,
         items: generated,
         basedOnCpUpdatedAt: cp.updatedAt || new Date().toISOString(),
+        basedOnAnalysisUpdatedAt: cpAnalysis?.updatedAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
       onSaveTP(updated);
@@ -123,6 +187,7 @@ export const TPManager: React.FC<TPManagerProps> = ({
       academicSettingId: academicSetting.id,
       items: items.map((item, idx) => ({ ...item, order: idx + 1 })),
       basedOnCpUpdatedAt: cp.updatedAt || new Date().toISOString(),
+      basedOnAnalysisUpdatedAt: cpAnalysis?.updatedAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     onSaveTP(updated);
@@ -268,6 +333,21 @@ export const TPManager: React.FC<TPManagerProps> = ({
         </div>
       )}
 
+      {/* Integrity Alert if CP Analysis was modified */}
+      {isAnalysisOutdated && (
+        <div className="bg-amber-50 border border-amber-300 p-4 rounded-2xl flex items-start gap-3 text-amber-900 text-xs">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="font-bold text-sm text-amber-950">
+              Pembaruan Terdeteksi pada Analisis CP (Hulu)
+            </h4>
+            <p className="text-amber-800">
+              Data Analisis CP telah diperbarui. Disarankan untuk meninjau kembali keselarasan TP atau klik <strong>"Terapkan dari Analisis CP"</strong> untuk sinkronisasi.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header Info */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -279,29 +359,43 @@ export const TPManager: React.FC<TPManagerProps> = ({
               <h3 className="text-lg font-bold text-slate-900">Perumusan Tujuan Pembelajaran (TP)</h3>
             </div>
             <p className="text-sm text-slate-500 mt-1">
-              Rumuskan butir-butir Tujuan Pembelajaran yang diturunkan dari Capaian Pembelajaran (CP) tersimpan untuk <strong>{context.subject}</strong> ({context.grade} - {context.phase}).
+              Rumuskan butir-butir Tujuan Pembelajaran yang diturunkan dari Capaian Pembelajaran (CP) dan Analisis CP untuk <strong>{context.subject}</strong> ({context.grade} - {context.phase}).
             </p>
           </div>
 
-          {/* AI Generator Button */}
-          <button
-            id="btn-ai-generate-tp"
-            onClick={handleGenerateAI}
-            disabled={isGenerating}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer disabled:opacity-50 self-start sm:self-auto"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>AI Sedang Merumuskan TP...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Generate TP dari CP (AI)</span>
-              </>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {hasCPAnalysis && (
+              <button
+                id="btn-import-from-analysis"
+                onClick={handleImportFromCPAnalysis}
+                className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
+                title="Terapkan rumusan TP yang telah dihasilkan dari tahap Analisis CP"
+              >
+                <Brain className="w-4 h-4 text-emerald-600" />
+                <span>Terapkan dari Analisis CP</span>
+              </button>
             )}
-          </button>
+
+            <button
+              id="btn-ai-generate-tp"
+              onClick={handleGenerateAI}
+              disabled={isGenerating}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer disabled:opacity-50 self-start sm:self-auto"
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>AI Sedang Merumuskan TP...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Generate TP dari CP & Analisis (AI)</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {generationError && (
@@ -311,22 +405,51 @@ export const TPManager: React.FC<TPManagerProps> = ({
         )}
       </div>
 
-      {/* Source CP Reference Card */}
-      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2 text-xs text-slate-700">
-        <div className="flex items-center justify-between font-bold text-slate-800 uppercase tracking-wider text-[11px]">
-          <span className="flex items-center gap-1.5 text-blue-800">
-            <BookOpen className="w-4 h-4 text-blue-600" />
-            <span>Rujukan CP Tersimpan ({context.phase})</span>
-          </span>
-          {cp.source && (
-            <span className="text-[11px] font-semibold text-slate-500 truncate max-w-xs">
-              {cp.source.title}
+      {/* Upstream Context Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Source CP Reference Card */}
+        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2 text-xs text-slate-700">
+          <div className="flex items-center justify-between font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+            <span className="flex items-center gap-1.5 text-blue-800">
+              <BookOpen className="w-4 h-4 text-blue-600" />
+              <span>Rujukan CP Tersimpan ({context.phase})</span>
             </span>
-          )}
+            {cp.source && (
+              <span className="text-[11px] font-semibold text-slate-500 truncate max-w-xs">
+                {cp.source.title}
+              </span>
+            )}
+          </div>
+          <p className="text-slate-600 leading-relaxed italic bg-white p-3 rounded-xl border border-slate-200/60 line-clamp-3">
+            "{cp.generalDescription || 'Elemen tertera pada CP tersimpan.'}"
+          </p>
         </div>
-        <p className="text-slate-600 leading-relaxed italic bg-white p-3 rounded-xl border border-slate-200/60">
-          "{cp.generalDescription || 'Elemen tertera pada CP tersimpan.'}"
-        </p>
+
+        {/* Source CP Analysis Reference Card */}
+        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2 text-xs text-slate-700">
+          <div className="flex items-center justify-between font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+            <span className="flex items-center gap-1.5 text-indigo-800">
+              <Brain className="w-4 h-4 text-indigo-600" />
+              <span>Analisis CP Rujukan ({cpAnalysis?.items?.length || 0} Elemen)</span>
+            </span>
+            <button
+              onClick={onBackToCP}
+              className="text-xs text-blue-700 hover:underline font-semibold"
+            >
+              Lihat Analisis
+            </button>
+          </div>
+          <div className="bg-white p-3 rounded-xl border border-slate-200/60 space-y-1">
+            <p className="text-slate-600 font-medium line-clamp-2">
+              {cpAnalysis?.generalSummary || 'Analisis kompetensi dan materi esensial diturunkan dari CP Fase.'}
+            </p>
+            {hasCPAnalysis && (
+              <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1 mt-1">
+                <Check className="w-3.5 h-3.5" /> Analisis CP siap dirujuk
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* List of TP Items */}

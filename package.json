@@ -12,7 +12,8 @@
     "lint": "tsc --noEmit",
     "test:snapshot": "tsx scripts/testSnapshotRegression.ts",
     "test:curriculum": "tsx scripts/testCurriculumMaster.ts",
-    "test:school": "tsx scripts/testSchoolArchitecture.ts"
+    "test:school": "tsx scripts/testSchoolArchitecture.ts",
+    "test:workflow": "tsx scripts/testWorkflowDependencyRegression.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

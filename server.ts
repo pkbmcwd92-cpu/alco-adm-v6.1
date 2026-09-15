@@ -229,7 +229,7 @@ Berikan output dalam format JSON dengan struktur:
 
 // 2. Endpoint: AI Generate TP from CP
 app.post('/api/ai/generate-tp', async (req, res) => {
-  const { cpGeneral, cpElements, subject, grade, phase, curriculum, count = 4 } = req.body || {};
+  const { cpGeneral, cpElements, cpAnalysis, subject, grade, phase, curriculum, count = 4 } = req.body || {};
 
   if (!cpGeneral && (!cpElements || cpElements.length === 0)) {
     return res.status(400).json({ error: 'Capaian Pembelajaran (CP) harus diisi terlebih dahulu' });
@@ -239,7 +239,7 @@ app.post('/api/ai/generate-tp', async (req, res) => {
   if (process.env.GEMINI_API_KEY) {
     try {
       const prompt = `Anda adalah ahli perancangan kurikulum pendidikan nasional Indonesia.
-Tugas Anda adalah merumuskan Tujuan Pembelajaran (TP) yang diturunkan SECARA KETAT dan EKSPLISIT dari Capaian Pembelajaran (CP) yang diberikan di bawah ini.
+Tugas Anda adalah merumuskan Tujuan Pembelajaran (TP) yang diturunkan SECARA KETAT dan EKSPLISIT dari Capaian Pembelajaran (CP) dan Hasil Analisis CP yang diberikan di bawah ini.
 
 PERINGATAN PENTING:
 - TP HARUS mencakup Kompetensi (kemampuan/keterampilan) dan Lingkup Materi (konten esensial).
@@ -257,6 +257,12 @@ ${
   cpElements && cpElements.length > 0
     ? cpElements.map((e: { name: string; content: string }, idx: number) => `${idx + 1}. [Elemen: ${e.name}]: ${e.content}`).join('\n')
     : 'Tidak ada rincian elemen.'
+}
+${
+  cpAnalysis && Array.isArray(cpAnalysis) && cpAnalysis.length > 0
+    ? `\nANALISIS CP (Rujukan Kompetensi & Materi):
+${cpAnalysis.map((a: any, idx: number) => `${idx + 1}. [Elemen: ${a.elementName || '-'}] Kompetensi: ${a.cpCompetence || '-'} | Materi: ${a.materialScope || '-'} | Rekomendasi TP: ${a.suggestedTp || '-'}`).join('\n')}`
+    : ''
 }
 
 Buatlah sekitar ${count} hingga 6 butir Tujuan Pembelajaran (TP) yang sistematis.

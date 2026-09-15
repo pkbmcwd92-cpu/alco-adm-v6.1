@@ -11,6 +11,7 @@ export interface CPAnalysisResult {
 export interface GenerateTPParams {
   cpGeneral: string;
   cpElements: CPElem[];
+  cpAnalysis?: any[];
   subject: string;
   grade: string;
   phase: string;

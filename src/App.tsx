@@ -356,6 +356,7 @@ export function App() {
             <TPManager
               tp={activeTP}
               cp={activeCP}
+              cpAnalysis={activeCPAnalysis}
               context={activeContext}
               academicSetting={activeAcademicSetting}
               profile={activeProfile}

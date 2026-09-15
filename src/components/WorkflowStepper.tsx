@@ -14,6 +14,8 @@ import {
   BookOpen,
   ListChecks,
   Calculator,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import {
   WorkflowStepId,
@@ -28,7 +30,8 @@ import {
   K13Analysis,
   K13KKM,
 } from '../types';
-import { getCurriculumTypeFromSetting, isK13 } from '../services/curriculumRouter';
+import { isK13 } from '../services/curriculumRouter';
+import { validateWorkflowDependencies, WorkflowStatus } from '../services/workflowEngine';
 
 interface WorkflowStepperProps {
   currentStep: WorkflowStepId;
@@ -59,54 +62,33 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
   k13Analysis,
   k13KKM,
 }) => {
-  const curriculumType = getCurriculumTypeFromSetting(academicSetting);
   const isK13Active = isK13(academicSetting);
 
-  // Common steps completion
-  const isProfileComplete = !!(profile?.name && profile.name.trim().length > 0);
-  const isAcademicComplete = !!(academicSetting?.subject && academicSetting?.grade);
+  // Validate workflow dependencies centrally
+  const validationReport = validateWorkflowDependencies({
+    profile,
+    school,
+    academicSetting,
+    cp,
+    cpAnalysis,
+    tp,
+    atp,
+    k13Analysis,
+    k13KKM,
+  });
 
-  // Merdeka steps completion & gating
-  const isCPComplete = !!(
-    (cp?.generalDescription && cp.generalDescription.trim().length > 10) ||
-    (cp?.elements && cp.elements.length > 0)
-  );
-  const isCPAnalysisComplete = !!(cpAnalysis?.items && cpAnalysis.items.length > 0);
-  const isTPComplete = !!(tp?.items && tp.items.length > 0);
-  const isATPComplete = !!(atp?.items && atp.items.length > 0);
+  const { stepStates, hasStaleModules } = validationReport;
 
-  // K13 steps completion & gating
-  const hasK13KD = !!(
-    k13Analysis?.items &&
-    k13Analysis.items.length > 0 &&
-    k13Analysis.items.some((i) => i.kd && i.kd.trim().length > 0)
-  );
-  const hasK13Analisis = !!(
-    hasK13KD &&
-    k13Analysis?.items &&
-    k13Analysis.items.some(
-      (i) => (i.materi && i.materi.trim().length > 0) || (i.kegiatan && i.kegiatan.trim().length > 0)
-    )
-  );
-  const hasK13TujuanIndikator = !!(
-    hasK13Analisis &&
-    k13Analysis?.items &&
-    k13Analysis.items.some(
-      (i) =>
-        (i.indikator && i.indikator.trim().length > 0) ||
-        (i.tujuanPembelajaran && i.tujuanPembelajaran.trim().length > 0)
-    )
-  );
-
-  // Build steps list depending on curriculum
   type StepItem = {
     id: WorkflowStepId;
     num: string;
     title: string;
     sub: string;
     icon: React.ReactNode;
+    status: WorkflowStatus;
     isComplete: boolean;
     isLocked: boolean;
+    isStale: boolean;
     lockReason?: string;
   };
 
@@ -118,8 +100,10 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'PROFIL',
           sub: 'Guru & Sekolah',
           icon: <User className="w-4 h-4" />,
-          isComplete: isProfileComplete,
-          isLocked: false,
+          status: stepStates.profile.status,
+          isComplete: stepStates.profile.isComplete,
+          isLocked: stepStates.profile.isBlocked,
+          isStale: stepStates.profile.isStale,
         },
         {
           id: 'academic',
@@ -127,8 +111,10 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'DATA PEMBELAJARAN',
           sub: 'Kelas, Mapel & JP',
           icon: <SlidersHorizontal className="w-4 h-4" />,
-          isComplete: isAcademicComplete,
-          isLocked: false,
+          status: stepStates.academic.status,
+          isComplete: stepStates.academic.isComplete,
+          isLocked: stepStates.academic.isBlocked,
+          isStale: stepStates.academic.isStale,
         },
         {
           id: 'k13-kd',
@@ -136,8 +122,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'SKL / KI / KD',
           sub: 'Kompetensi Dasar',
           icon: <BookOpen className="w-4 h-4" />,
-          isComplete: hasK13KD,
-          isLocked: false,
+          status: stepStates['k13-kd'].status,
+          isComplete: stepStates['k13-kd'].isComplete,
+          isLocked: stepStates['k13-kd'].isBlocked,
+          isStale: stepStates['k13-kd'].isStale,
+          lockReason: stepStates['k13-kd'].reason,
         },
         {
           id: 'k13-indikator',
@@ -145,9 +134,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'ANALISIS KD',
           sub: 'Telaah & Materi Pokok',
           icon: <ListChecks className="w-4 h-4" />,
-          isComplete: hasK13Analisis,
-          isLocked: !hasK13KD,
-          lockReason: 'Memerlukan data SKL/KI/KD terlebih dahulu',
+          status: stepStates['k13-indikator'].status,
+          isComplete: stepStates['k13-indikator'].isComplete,
+          isLocked: stepStates['k13-indikator'].isBlocked,
+          isStale: stepStates['k13-indikator'].isStale,
+          lockReason: stepStates['k13-indikator'].reason,
         },
         {
           id: 'k13-tujuan',
@@ -155,9 +146,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'TUJUAN & INDIKATOR',
           sub: 'Tujuan Pembelajaran & IPK',
           icon: <Calculator className="w-4 h-4" />,
-          isComplete: hasK13TujuanIndikator,
-          isLocked: !hasK13Analisis,
-          lockReason: 'Memerlukan Analisis KD & Materi terlebih dahulu',
+          status: stepStates['k13-tujuan'].status,
+          isComplete: stepStates['k13-tujuan'].isComplete,
+          isLocked: stepStates['k13-tujuan'].isBlocked,
+          isStale: stepStates['k13-tujuan'].isStale,
+          lockReason: stepStates['k13-tujuan'].reason,
         },
         {
           id: 'admin',
@@ -165,9 +158,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'ADMINISTRASI',
           sub: 'Perencanaan & Nilai',
           icon: <FileCheck2 className="w-4 h-4" />,
-          isComplete: hasK13TujuanIndikator,
-          isLocked: !hasK13TujuanIndikator,
-          lockReason: 'Memerlukan Tujuan Pembelajaran / Indikator terlebih dahulu',
+          status: stepStates.admin.status,
+          isComplete: stepStates.admin.isComplete,
+          isLocked: stepStates.admin.isBlocked,
+          isStale: stepStates.admin.isStale,
+          lockReason: stepStates.admin.reason,
         },
       ]
     : [
@@ -177,8 +172,10 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'PROFIL',
           sub: 'Guru & Sekolah',
           icon: <User className="w-4 h-4" />,
-          isComplete: isProfileComplete,
-          isLocked: false,
+          status: stepStates.profile.status,
+          isComplete: stepStates.profile.isComplete,
+          isLocked: stepStates.profile.isBlocked,
+          isStale: stepStates.profile.isStale,
         },
         {
           id: 'academic',
@@ -186,8 +183,10 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'DATA PEMBELAJARAN',
           sub: 'Kelas, Fase, Mapel',
           icon: <SlidersHorizontal className="w-4 h-4" />,
-          isComplete: isAcademicComplete,
-          isLocked: false,
+          status: stepStates.academic.status,
+          isComplete: stepStates.academic.isComplete,
+          isLocked: stepStates.academic.isBlocked,
+          isStale: stepStates.academic.isStale,
         },
         {
           id: 'cp',
@@ -195,8 +194,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'CP',
           sub: 'Capaian Pembelajaran',
           icon: <FileSpreadsheet className="w-4 h-4" />,
-          isComplete: isCPComplete,
-          isLocked: false,
+          status: stepStates.cp.status,
+          isComplete: stepStates.cp.isComplete,
+          isLocked: stepStates.cp.isBlocked,
+          isStale: stepStates.cp.isStale,
+          lockReason: stepStates.cp.reason,
         },
         {
           id: 'cp-analysis',
@@ -204,9 +206,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'ANALISIS CP',
           sub: 'Bedah Kompetensi',
           icon: <Brain className="w-4 h-4" />,
-          isComplete: isCPAnalysisComplete,
-          isLocked: !isCPComplete,
-          lockReason: 'Memerlukan data CP terlebih dahulu',
+          status: stepStates['cp-analysis'].status,
+          isComplete: stepStates['cp-analysis'].isComplete,
+          isLocked: stepStates['cp-analysis'].isBlocked,
+          isStale: stepStates['cp-analysis'].isStale,
+          lockReason: stepStates['cp-analysis'].reason,
         },
         {
           id: 'tp',
@@ -214,9 +218,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'TP',
           sub: 'Tujuan Pembelajaran',
           icon: <Target className="w-4 h-4" />,
-          isComplete: isTPComplete,
-          isLocked: !isCPComplete,
-          lockReason: 'Memerlukan data CP terlebih dahulu',
+          status: stepStates.tp.status,
+          isComplete: stepStates.tp.isComplete,
+          isLocked: stepStates.tp.isBlocked,
+          isStale: stepStates.tp.isStale,
+          lockReason: stepStates.tp.reason,
         },
         {
           id: 'atp',
@@ -224,9 +230,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'ATP',
           sub: 'Alur Tujuan & JP',
           icon: <GitMerge className="w-4 h-4" />,
-          isComplete: isATPComplete,
-          isLocked: !isTPComplete,
-          lockReason: 'Memerlukan daftar TP terlebih dahulu',
+          status: stepStates.atp.status,
+          isComplete: stepStates.atp.isComplete,
+          isLocked: stepStates.atp.isBlocked,
+          isStale: stepStates.atp.isStale,
+          lockReason: stepStates.atp.reason,
         },
         {
           id: 'admin',
@@ -234,9 +242,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
           title: 'ADMINISTRASI',
           sub: 'Asesmen & Dokumen',
           icon: <FileCheck2 className="w-4 h-4" />,
-          isComplete: isATPComplete,
-          isLocked: !isATPComplete,
-          lockReason: 'Memerlukan susunan ATP terlebih dahulu',
+          status: stepStates.admin.status,
+          isComplete: stepStates.admin.isComplete,
+          isLocked: stepStates.admin.isBlocked,
+          isStale: stepStates.admin.isStale,
+          lockReason: stepStates.admin.reason,
         },
       ];
 
@@ -311,6 +321,18 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
         </div>
       </div>
 
+      {/* Stale Dependency Notification Banner */}
+      {hasStaleModules && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between text-amber-900 text-xs">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>
+              <strong>Pemberitahuan Penyelarasan Alur:</strong> Terdapat perubahan pada data hulu (upstream). Modul bertanda <strong>Perlu Ditinjau</strong> disarankan untuk dicek atau diselaraskan ulang.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Workflow Navigation Bar */}
       <nav aria-label="Alur Kerja Administrasi" className="bg-white rounded-2xl p-2 sm:p-3 border border-slate-200/80 shadow-xs">
         <div className={`grid grid-cols-2 md:grid-cols-3 ${isK13Active ? 'lg:grid-cols-6' : 'lg:grid-cols-7'} gap-2`}>
@@ -323,12 +345,14 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
                 id={`btn-step-${step.id}`}
                 disabled={step.isLocked}
                 onClick={() => onSelectStep(step.id)}
-                title={step.isLocked ? step.lockReason : `Buka tahap ${step.num}: ${step.title}`}
+                title={step.isLocked ? step.lockReason : step.isStale ? 'Data hulu telah diperbarui — periksa kembali tahap ini' : `Buka tahap ${step.num}: ${step.title}`}
                 className={`relative flex flex-col items-start p-3 rounded-xl text-left transition-all duration-150 select-none ${
                   isActive
                     ? 'bg-blue-900 text-white shadow-md shadow-blue-900/15 ring-2 ring-blue-700'
                     : step.isLocked
                     ? 'bg-slate-50 text-slate-400 border border-slate-200/50 cursor-not-allowed opacity-75'
+                    : step.isStale
+                    ? 'bg-amber-50/70 hover:bg-amber-100/70 text-amber-900 border border-amber-300/80 cursor-pointer'
                     : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 cursor-pointer'
                 }`}
               >
@@ -339,18 +363,25 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
                       className={`text-[11px] font-mono font-bold px-1.5 py-0.5 rounded ${
                         isActive
                           ? 'bg-blue-800 text-blue-200'
+                          : step.isStale
+                          ? 'bg-amber-200 text-amber-900'
                           : 'bg-slate-100 text-slate-600'
                       }`}
                     >
                       {step.num}
                     </span>
-                    <span className={isActive ? 'text-blue-300' : 'text-slate-500'}>
+                    <span className={isActive ? 'text-blue-300' : step.isStale ? 'text-amber-700' : 'text-slate-500'}>
                       {step.icon}
                     </span>
                   </div>
 
                   <div>
-                    {step.isComplete ? (
+                    {step.isStale ? (
+                      <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-amber-200 text-amber-900">
+                        <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                        Stale
+                      </span>
+                    ) : step.isComplete ? (
                       <CheckCircle2
                         className={`w-4 h-4 ${
                           isActive ? 'text-emerald-300' : 'text-emerald-600'
@@ -375,14 +406,14 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
                 <div className="w-full">
                   <div
                     className={`text-xs font-bold tracking-tight truncate ${
-                      isActive ? 'text-white' : 'text-slate-900'
+                      isActive ? 'text-white' : step.isStale ? 'text-amber-950' : 'text-slate-900'
                     }`}
                   >
                     {step.title}
                   </div>
                   <div
                     className={`text-[11px] truncate ${
-                      isActive ? 'text-blue-200' : 'text-slate-500'
+                      isActive ? 'text-blue-200' : step.isStale ? 'text-amber-800' : 'text-slate-500'
                     }`}
                   >
                     {step.sub}
@@ -394,6 +425,8 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
                   className={`absolute bottom-0 left-3 right-3 h-0.5 rounded-full ${
                     isActive
                       ? 'bg-blue-400'
+                      : step.isStale
+                      ? 'bg-amber-500'
                       : step.isComplete
                       ? 'bg-emerald-500'
                       : 'bg-transparent'
@@ -407,3 +440,4 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
     </div>
   );
 };
+

@@ -3,6 +3,33 @@ export type DocumentMode = 'data' | 'blank';
 
 export * from './jpEngine';
 
+export type WorkflowStatus = 'BLOCKED' | 'READY' | 'IN_PROGRESS' | 'COMPLETE' | 'STALE';
+
+export type DataProvenanceOrigin = 'USER' | 'AI' | 'SYSTEM';
+
+export interface DataProvenance {
+  generatedBy?: DataProvenanceOrigin;
+  generatedAt?: string;
+  sourceRevision?: number;
+  engine?: string;
+}
+
+export interface AdministrationContext {
+  workspaceId: string;
+  teacherProfileId: string;
+  schoolId: string;
+  academicYear: string;
+  semester: 1 | 2;
+  curriculumType: CurriculumType;
+  level: 'SD' | 'SMP' | 'SMA' | 'SMK';
+  grade: number;
+  rawGrade: string;
+  subjectCode: string;
+  subjectName: string;
+  phase?: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  curriculumResolutionStatus: 'RESOLVED' | 'UNRESOLVED' | 'AMBIGUOUS';
+}
+
 export interface TeacherProfile {
   id: string;
   name: string;
@@ -164,54 +191,78 @@ export interface CPAnalysisItem {
 export interface CPAnalysisData {
   id: string;
   academicSettingId: string;
+  workspaceId?: string;
   cpId?: string;
   generalSummary?: string;
   items: CPAnalysisItem[];
+  sourceCPVersion?: string;
   basedOnCpUpdatedAt?: string;
+  revision?: number;
+  status?: 'DRAFT' | 'FINAL';
+  provenance?: DataProvenance;
   updatedAt: string;
 }
 
 export interface TPItem {
   id: string;
   code: string; // e.g. "TP 1.1", "TP 4.1"
+  cpAnalysisId?: string; // Lineage reference to CPAnalysisItem.id
   elementName?: string;
   statement: string; // Pernyataan Tujuan Pembelajaran
   competence: string; // Kompetensi / KKO yang dituju (misal: "Menganalisis", "Menjelaskan")
   contentScope: string; // Lingkup Materi / Konsep Inti
   p3Dimensions: string[]; // Dimensi Profil Pelajar Pancasila
   order: number;
+  sequence?: number;
+  status?: 'DRAFT' | 'FINAL';
+  provenance?: DataProvenance;
 }
 
 export interface TPData {
   id: string;
   academicSettingId: string;
+  workspaceId?: string;
   items: TPItem[];
   basedOnCpUpdatedAt?: string;
   basedOnAnalysisUpdatedAt?: string;
+  sourceAnalysisRevision?: number;
+  revision?: number;
+  status?: 'DRAFT' | 'FINAL';
+  provenance?: DataProvenance;
   updatedAt: string;
 }
 
 export interface ATPItem {
   id: string;
   stepNumber: number; // Urutan Alur Pembelajaran (1, 2, 3...)
-  tpId?: string;
-  tpCode: string;
-  tpStatement: string;
-  materialScope: string; // Lingkup Materi
-  jp: number; // Alokasi Jam Pelajaran (misal 6 JP)
-  p3Dimensions: string[]; // Profil Pelajar Pancasila
-  assessmentPlan: string; // Asesmen Awal, Formatif, Sumatif
-  glossary: string; // Kata Kunci / Glosarium
+  sequence?: number; // Alias for stepNumber
+  tpId?: string; // Canonical reference to TPItem.id
+  tpCode?: string; // Resolved display code
+  tpStatement?: string; // Resolved display statement
+  materialScope?: string; // Resolved display material scope
+  allocatedJP?: number | null; // Alokasi Jam Pelajaran (explicitly nullable! Unknown = null)
+  jp?: number; // Compatibility field
+  semester?: 1 | 2 | null;
+  p3Dimensions?: string[]; // Profil Pelajar Pancasila
+  assessmentPlan?: string; // Asesmen Awal, Formatif, Sumatif
+  glossary?: string; // Kata Kunci / Glosarium
   resources?: string; // Sumber Belajar / Media
+  sourceTpRevision?: number;
+  provenance?: DataProvenance;
 }
 
 export interface ATPData {
   id: string;
   academicSettingId: string;
+  workspaceId?: string;
   rationale?: string; // Rasionalisasi Alur Pembelajaran
   items: ATPItem[];
-  totalJP: number;
+  totalJP?: number;
   basedOnTpUpdatedAt?: string;
+  sourceTpRevision?: number;
+  revision?: number;
+  status?: 'DRAFT' | 'FINAL';
+  provenance?: DataProvenance;
   updatedAt: string;
 }
 
@@ -364,14 +415,19 @@ export interface KKTPLevel {
 export interface AssessmentCriterion {
   id: string;
   academicSettingId: string;
+  workspaceId?: string;
   tpId: string; // Terhubung ke TP (Merdeka) atau KD (K13)
   description: string;
   approach: KKTPApproach;
   criterionMode?: AssessmentCriterionMode;
+  method?: 'DESCRIPTION' | 'RUBRIC' | 'INTERVAL' | 'LEGACY_KKM';
   indicators: string[];
   levels: KKTPLevel[];
-  passingThreshold?: number; // Nilai KKM/Interval minimum tercapai (misal: 75)
+  passingThreshold?: number | null; // Nilai KKM/Interval minimum tercapai jika dipilih
   notes?: string;
+  sourceTpRevision?: number;
+  basedOnTpUpdatedAt?: string;
+  provenance?: DataProvenance;
   updatedAt: string;
 }
 
