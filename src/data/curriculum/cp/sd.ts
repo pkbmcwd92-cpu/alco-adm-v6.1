@@ -432,6 +432,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'A',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase A, peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar, sesuai dengan tujuan, konteks sosial, dan akademis. Peserta didik mampu memahami pesan lisan dan informasi dari media audio, teks aural, teks visual dan/atau audiovisual.',
@@ -464,6 +465,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'A',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase A, peserta didik dapat memahami bilangan cacah sampai 100, melakukan operasi penjumlahan dan pengurangan bilangan cacah sampai 20, mengidentifikasi dan membandingkan bentuk bangun datar dan bangun ruang sederhana.',
@@ -496,6 +498,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'A',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase A, peserta didik mengenal simbol-simbol Pancasila dan lambang negara Garuda Pancasila, menerapkan nilai-nilai Pancasila di lingkungan keluarga dan sekolah, serta mengenal aturan di rumah dan di sekolah.',
@@ -530,6 +533,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'B',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase B, peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar, sesuai dengan tujuan, konteks sosial, akademis, dan dunia kerja. Peserta didik mampu memahami pesan dan informasi tentang kehidupan sehari-hari, teks narasi, dan puisi sederhana dalam bentuk cetak atau elektronik.',
@@ -562,6 +566,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'B',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase B, peserta didik dapat menunjukkan pemahaman dan intuisi bilangan (number sense) pada bilangan cacah sampai 10.000. Mereka dapat melakukan operasi penjumlahan, pengurangan, perkalian, dan pembagian bilangan cacah sampai 100.',
@@ -594,6 +599,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'B',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase B, peserta didik mengidentifikasi keterkaitan antara bentuk serta fungsi bagian tubuh pada manusia dan tumbuhan. Peserta didik dapat membuat simulasi menggunakan bagan/alat bantu sederhana tentang siklus hidup makhluk hidup, wujud zat dan perubahannya, serta bentuk energi dan perubahannya.',
@@ -616,6 +622,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'B',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase B, peserta didik mampu memahami dan menyajikan pesan moral berdasarkan sila-sila Pancasila, mengenal identitas diri dan lingkungan, serta mempraktikkan gotong royong dan mematuhi norma/aturan yang berlaku.',
@@ -648,6 +655,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'B',
     level: 'SD',
     regulationSourceId: 'REG-PERMENDIKDASMEN-13-2025',
+    implementationFromAcademicYear: '2025/2026',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase B, peserta didik memahami konsep dasar berpikir komputasional sederhana, logika urutan instruksi (algoritma visual), serta pengenalan awal interaksi dengan kecerdasan buatan dalam kehidupan sehari-hari secara aman dan etis.',
@@ -672,6 +680,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'C',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase C, peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai dengan tujuan dan konteks sosial. Peserta didik mampu memahami, mengolah, dan menginterpretasi informasi serta pesan dari berbagai tipe teks secara kritis dan kreatif.',
@@ -704,6 +713,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'C',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase C, peserta didik dapat menunjukkan pemahaman bilangan pecahan, desimal, persen, melakukan operasi hitung campuran, mengukur volume bangun ruang kubus dan balok, serta menyajikan dan menganalisis data dalam bentuk tabel dan diagram.',
@@ -731,6 +741,7 @@ export const SD_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'C',
     level: 'SD',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase C, peserta didik melakukan simulasi dengan menggunakan gambar/bagan/alat bantu sederhana tentang sistem organ tubuh manusia, sistem tata surya, interaksi antar komponen ekosistem, serta pengaruh aktivitas manusia terhadap lingkungan dan keanekaragaman hayati.',

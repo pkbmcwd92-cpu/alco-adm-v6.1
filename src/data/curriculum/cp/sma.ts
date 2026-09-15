@@ -318,6 +318,7 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'E',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase E, peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai dengan tujuan, konteks sosial, akademis, dan dunia kerja. Peserta didik mampu mengevaluasi informasi, ide pokok, dan pesan implisit dari berbagai tipe teks fiksi dan nonfiksi.',
@@ -350,6 +351,7 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'E',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase E, peserta didik dapat menggeneralisasi sifat-sifat bilangan berpangkat (eksponen) dan logaritma, barisan dan deret, sistem persamaan linear tiga variabel, perbandingan trigonometri siku-siku, serta statistika dan peluang.',
@@ -377,6 +379,7 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'E',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase E, peserta didik mengidentifikasi besaran dan satuan pengukuran, energi terbarukan dan dampaknya terhadap lingkungan, serta prinsip pemanasan global.',
@@ -401,6 +404,7 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'F',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase F, peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai dengan tujuan, konteks sosial, akademis, dan dunia kerja secara mandiri, kritis, dan beretika. Peserta didik mampu menulis karya ilmiah dan teks sastra bermutu.',
@@ -428,6 +432,7 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'F',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase F, peserta didik dapat memodelkan pinjaman dan investasi dengan bunga majemuk dan anuitas, menerapkan konsep matriks, transformasi geometri, serta fungsi invers dan komposisi.',
@@ -455,6 +460,7 @@ export const SMA_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'F',
     level: 'SMA',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase F (Mapel Pilihan), peserta didik memahami konsep mekanika fluida, termodinamika, gelombang mekanik dan elektromagnetik, rangkaian arus searah dan bolak-balik, serta dasar fisika modern.',

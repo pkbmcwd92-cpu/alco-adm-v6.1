@@ -317,6 +317,7 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase D, peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai dengan tujuan, konteks sosial, akademis, dan dunia kerja. Peserta didik mampu memahami, mengolah, menginterpretasi, dan mengevaluasi informasi dari berbagai tipe teks secara kritis dan kreatif.',
@@ -349,6 +350,7 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase D, peserta didik dapat mengoperasikan bilangan rasional, memahami bentuk aljabar, persamaan dan pertidaksamaan linier satu variabel, relasi dan fungsi, sistem persamaan linier dua variabel, teorema Pythagoras, serta peluang dan statistika.',
@@ -381,6 +383,7 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase D, peserta didik memahami sistem organisasi kehidupan, klasifikasi makhluk hidup, zat dan perubahannya, sistem tubuh manusia, interaksi ekosistem, gerak dan gaya, getaran, gelombang, dan cahaya, serta tata surya.',
@@ -403,6 +406,7 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase D, peserta didik memahami keterkaitan kondisi geografis dengan aktivitas ekonomi masyarakat, dinamika interaksi sosial, sejarah peradaban nusantara dan kolonialisme, serta literasi finansial.',
@@ -425,6 +429,7 @@ export const SMP_CP_ENTRIES: MasterCPEntry[] = [
     phase: 'D',
     level: 'SMP',
     regulationSourceId: 'DEC-BSKAP-032-2024',
+    implementationFromAcademicYear: '2024/2025',
     verificationStatus: 'UNVERIFIED',
     generalDescription:
       'Pada akhir Fase D, peserta didik mampu menerapkan berpikir komputasional untuk menghasilkan solusi, memanfaatkan TIK untuk integrasi konten dan kolaborasi, memahami sistem komputer dan jaringan internet, menganalisis data, serta membuat program blok/tekstual.',

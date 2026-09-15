@@ -12,6 +12,8 @@
  * 8. Master Capaian Pembelajaran (CP)
  */
 
+import fs from 'fs';
+import path from 'path';
 import {
   ALL_CURRICULUM_STRUCTURE_RULES,
   resolveCurriculumContext,
@@ -33,6 +35,8 @@ import {
   SD_CP_ENTRIES,
   SMP_CP_ENTRIES,
   SMA_CP_ENTRIES,
+  parseAcademicYearStart,
+  isCPApplicableForAcademicYear,
 } from '../src/data/curriculum';
 import {
   getSubjectJP,
@@ -916,10 +920,10 @@ async function runCurriculumMasterTests() {
       phase: 'D',
       level: 'SMP',
       regulationSourceId: 'DEC-BSKAP-046-2025',
+      implementationFromAcademicYear: '2025/2026',
       verificationStatus: 'VERIFIED',
       generalDescription: 'Varian A',
       elements: [],
-      effectiveFrom: '2025-07-01',
     },
     {
       id: 'cp-mock-b',
@@ -927,10 +931,10 @@ async function runCurriculumMasterTests() {
       phase: 'D',
       level: 'SMP',
       regulationSourceId: 'DEC-BSKAP-046-2025',
+      implementationFromAcademicYear: '2025/2026',
       verificationStatus: 'VERIFIED',
       generalDescription: 'Varian B',
       elements: [],
-      effectiveFrom: '2025-07-01',
     },
   ];
   const ambiguousCpRes = resolveCPContext({
@@ -1200,10 +1204,10 @@ async function runCurriculumMasterTests() {
       phase: 'D',
       level: 'SMP',
       regulationSourceId: 'DEC-BSKAP-046-2025',
+      implementationFromAcademicYear: '2025/2026',
       verificationStatus: 'VERIFIED',
       generalDescription: 'Versi 1',
       elements: [],
-      effectiveFrom: '2025-07-01',
     },
     {
       id: 'cp-dup-2',
@@ -1211,10 +1215,10 @@ async function runCurriculumMasterTests() {
       phase: 'D',
       level: 'SMP',
       regulationSourceId: 'DEC-BSKAP-046-2025',
+      implementationFromAcademicYear: '2025/2026',
       verificationStatus: 'VERIFIED',
       generalDescription: 'Versi 2',
       elements: [],
-      effectiveFrom: '2025-07-01',
     },
   ];
   const duplicateCPRes = resolveCPContext({
@@ -1230,6 +1234,149 @@ async function runCurriculumMasterTests() {
       duplicateCPRes.candidates?.length === 2,
     'Kandidat CP ganda aktif menghasilkan status AMBIGUOUS tanpa memilih diam-diam'
   );
+
+  // TEST 36: Academic Year Parser Strictness
+  console.log('\n--- 36. Academic Year Parser Strictness ---');
+  assert(parseAcademicYearStart('2025/2026') === 2025, '2025/2026 -> 2025 (valid)');
+  assert(parseAcademicYearStart('2026/2027') === 2026, '2026/2027 -> 2026 (valid)');
+  assert(parseAcademicYearStart('2025') === null, '2025 -> null (invalid format)');
+  assert(parseAcademicYearStart('2025/2027') === null, '2025/2027 -> null (invalid step: 2027 !== 2025 + 1)');
+  assert(parseAcademicYearStart('abc2025') === null, 'abc2025 -> null (invalid alphanumeric prefix)');
+  assert(parseAcademicYearStart('2025-2026') === null, '2025-2026 -> null (hyphen format is invalid)');
+  assert(parseAcademicYearStart(null) === null, 'null -> null');
+  assert(parseAcademicYearStart(undefined) === null, 'undefined -> null');
+  assert(parseAcademicYearStart('') === null, 'empty string -> null');
+
+  // TEST 37: Missing Metadata Applicability Safety (No Guessing from effectiveFrom / legalEffectiveDate)
+  console.log('\n--- 37. Missing Metadata Applicability Safety ---');
+  const cpMissingImpYearWithEffectiveFrom: any = {
+    id: 'cp-fixture-missing-impyear',
+    subjectCode: 'PJOK',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    verificationStatus: 'UNVERIFIED',
+    effectiveFrom: '2025-07-01',
+    implementationFromAcademicYear: null,
+    generalDescription: 'Fixture missing imp year',
+    elements: [],
+  };
+  assert(
+    isCPApplicableForAcademicYear(cpMissingImpYearWithEffectiveFrom, '2025/2026') === false,
+    'CP tanpa implementationFromAcademicYear meskipun memiliki effectiveFrom TIDAK applicable (no guessing)'
+  );
+
+  const resolveMissingRes = resolveCPContext({
+    subjectCode: 'PJOK',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2025/2026',
+    entriesPool: [cpMissingImpYearWithEffectiveFrom],
+  });
+  assert(
+    resolveMissingRes.status === 'UNRESOLVED' && resolveMissingRes.cp === null,
+    'Resolver menghasilkan UNRESOLVED ketika entri tidak memiliki implementationFromAcademicYear'
+  );
+
+  // TEST 38: effectiveUntil Ignored by Academic-Year Resolver
+  console.log('\n--- 38. effectiveUntil Ignored by Academic-Year Resolver ---');
+  const cpWithEffectiveUntilFixture: any = {
+    id: 'cp-fixture-eff-until',
+    subjectCode: 'PJOK',
+    phase: 'A',
+    level: 'SD',
+    regulationSourceId: 'DEC-BSKAP-046-2025',
+    verificationStatus: 'UNVERIFIED',
+    implementationFromAcademicYear: '2025/2026',
+    implementationUntilAcademicYear: null,
+    effectiveUntil: '2025-06-30', // Tanggal kalender ini tidak boleh membatasi tahun ajaran
+    generalDescription: 'Fixture open-ended academic year with calendar effectiveUntil',
+    elements: [],
+  };
+  assert(
+    isCPApplicableForAcademicYear(cpWithEffectiveUntilFixture, '2026/2027') === true,
+    'effectiveUntil tidak membatasi tahun ajaran jika implementationUntilAcademicYear adalah null (open-ended)'
+  );
+
+  // TEST 39: Invalid Academic Year Input Handling
+  console.log('\n--- 39. Invalid Academic Year Input Handling ---');
+  const invalidAYRes1 = resolveCPContext({
+    subjectCode: 'PJOK',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2025-2026', // Format tidak valid
+  });
+  assert(
+    invalidAYRes1.status === 'UNRESOLVED' && invalidAYRes1.cp === null,
+    'Input tahun ajaran format invalid ("2025-2026") menghasilkan status UNRESOLVED'
+  );
+
+  const invalidAYRes2 = resolveCPContext({
+    subjectCode: 'PJOK',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2025', // 4 digit tanpa pasangannya
+  });
+  assert(
+    invalidAYRes2.status === 'UNRESOLVED' && invalidAYRes2.cp === null,
+    'Input tahun ajaran format invalid ("2025") menghasilkan status UNRESOLVED'
+  );
+
+  // TEST 40: Closed-Range vs Open-Ended Multi-Year Lifecycle
+  console.log('\n--- 40. Closed-Range vs Open-Ended Multi-Year Lifecycle ---');
+  // Closed-range test (Religion 2025/2026):
+  const paiSd2025 = resolveCPContext({
+    subjectCode: 'PAI',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2025/2026',
+  });
+  assert(
+    paiSd2025.status === 'RESOLVED' && paiSd2025.entry?.regulationSourceId === 'DEC-BSKAP-046-2025',
+    'PAI 2025/2026 teresolusi ke 046/2025 (closed range: 2025/2026 - 2025/2026)'
+  );
+
+  const paiSd2026 = resolveCPContext({
+    subjectCode: 'PAI',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2026/2027',
+  });
+  assert(
+    paiSd2026.status === 'RESOLVED' && paiSd2026.entry?.regulationSourceId === 'DEC-BKPDM-020-2026',
+    'PAI 2026/2027 teresolusi ke 020/2026 (open-ended from 2026/2027)'
+  );
+
+  const paiSd2027 = resolveCPContext({
+    subjectCode: 'PAI',
+    phase: 'A',
+    level: 'SD',
+    academicYear: '2027/2028',
+  });
+  assert(
+    paiSd2027.status === 'RESOLVED' && paiSd2027.entry?.regulationSourceId === 'DEC-BKPDM-020-2026',
+    'PAI 2027/2028 tetap teresolusi ke 020/2026 (open-ended from 2026/2027)'
+  );
+
+  // TEST 41: Static Regression Guard on isCPApplicableForAcademicYear Code Structure
+  console.log('\n--- 41. Static Regression Guard on isCPApplicableForAcademicYear ---');
+  const cpIndexFilePath = path.join(process.cwd(), 'src/data/curriculum/cp/index.ts');
+  const cpIndexCode = fs.readFileSync(cpIndexFilePath, 'utf-8');
+
+  // Extract isCPApplicableForAcademicYear function body
+  const fnMatch = cpIndexCode.match(/export function isCPApplicableForAcademicYear\([\s\S]*?\n\}/);
+  assert(fnMatch !== null, 'Fungsi isCPApplicableForAcademicYear ditemukan dalam cp/index.ts');
+
+  if (fnMatch) {
+    const fnBody = fnMatch[0];
+    assert(!fnBody.includes('effectiveFrom'), 'isCPApplicableForAcademicYear TIDAK mengandung "effectiveFrom" fallback');
+    assert(!fnBody.includes('effectiveUntil'), 'isCPApplicableForAcademicYear TIDAK mengandung "effectiveUntil" fallback');
+    assert(!fnBody.includes('legalEffectiveDate'), 'isCPApplicableForAcademicYear TIDAK mengandung "legalEffectiveDate" fallback');
+    assert(!fnBody.includes('.slice'), 'isCPApplicableForAcademicYear TIDAK memotong tanggal dengan .slice()');
+    assert(!fnBody.includes('07-01'), 'isCPApplicableForAcademicYear TIDAK mengandung tanggal sintetis "07-01"');
+    assert(!fnBody.includes('2026-07-01'), 'isCPApplicableForAcademicYear TIDAK mengandung tanggal sintetis "2026-07-01"');
+    assert(!fnBody.includes('new Date()') && !fnBody.includes('Date.now()'), 'isCPApplicableForAcademicYear TIDAK bergantung pada clock runtime');
+  }
 
   console.log('\n===========================================================');
   console.log('🎉 ALL CURRICULUM MASTER TESTS PASSED SUCCESSFULLY!');

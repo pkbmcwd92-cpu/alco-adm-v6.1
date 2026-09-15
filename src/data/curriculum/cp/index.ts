@@ -35,52 +35,47 @@ export interface CPResolutionResult {
 }
 
 /**
- * Helper to parse starting integer year from academic year string, e.g. "2025/2026" -> 2025
+ * Helper to parse starting integer year from academic year string strictly.
+ * Format must be YYYY/YYYY where the second year is exactly startYear + 1.
+ * Returns null if invalid or format mismatch.
  */
 export function parseAcademicYearStart(ay?: string | null): number | null {
-  if (!ay) return null;
-  const match = ay.match(/(\d{4})/);
-  return match ? parseInt(match[1], 10) : null;
+  if (!ay || typeof ay !== 'string') return null;
+  const match = ay.trim().match(/^(\d{4})\/(\d{4})$/);
+  if (!match) return null;
+  const startYear = parseInt(match[1], 10);
+  const endYear = parseInt(match[2], 10);
+  if (endYear !== startYear + 1) return null;
+  return startYear;
 }
 
 /**
  * Memeriksa apakah suatu tahun ajaran target masuk dalam masa berlaku CP.
- * Menggunakan semantik murni tahun ajaran (academic year range) tanpa konversi tanggal sintetis (seperti 1 Juli).
+ * Menggunakan semantik murni metadata tahun ajaran (implementationFromAcademicYear & implementationUntilAcademicYear)
+ * tanpa menurunkan/menebak dari effectiveFrom, effectiveUntil, legalEffectiveDate, atau tanggal kalender sintetis.
  */
 export function isCPApplicableForAcademicYear(
   cp: MasterCPEntry,
   targetAcademicYear: string
 ): boolean {
   const targetYear = parseAcademicYearStart(targetAcademicYear);
-  if (targetYear === null) return false;
+  const fromYear = parseAcademicYearStart(cp.implementationFromAcademicYear);
 
-  // 1. Cek batas awal tahun ajaran implementasi
-  if (cp.implementationFromAcademicYear) {
-    const fromYear = parseAcademicYearStart(cp.implementationFromAcademicYear);
-    if (fromYear !== null && targetYear < fromYear) {
-      return false;
-    }
-  } else if (cp.effectiveFrom) {
-    const fromYear = parseInt(cp.effectiveFrom.slice(0, 4), 10);
-    if (!isNaN(fromYear) && targetYear < fromYear) {
-      return false;
-    }
+  if (targetYear === null || fromYear === null) {
+    return false;
   }
 
-  // 2. Cek batas akhir tahun ajaran implementasi (jika null, berarti berlaku terus/open-ended hingga digantikan)
+  if (targetYear < fromYear) {
+    return false;
+  }
+
   if (cp.implementationUntilAcademicYear) {
     const untilYear = parseAcademicYearStart(cp.implementationUntilAcademicYear);
-    if (untilYear !== null && targetYear > untilYear) {
+    if (untilYear === null) {
       return false;
     }
-  } else if (cp.effectiveUntil) {
-    const untilYear = parseInt(cp.effectiveUntil.slice(0, 4), 10);
-    if (!isNaN(untilYear)) {
-      const isMidYearOrEarly = cp.effectiveUntil.slice(5) <= '06-30';
-      const maxApplicableStartYear = isMidYearOrEarly ? untilYear - 1 : untilYear;
-      if (targetYear > maxApplicableStartYear) {
-        return false;
-      }
+    if (targetYear > untilYear) {
+      return false;
     }
   }
 
