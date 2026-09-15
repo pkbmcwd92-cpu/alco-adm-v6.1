@@ -22,6 +22,8 @@ import {
 } from '../types';
 import { isK13, isMerdeka, getCurriculumTypeFromSetting } from './curriculumRouter';
 import { findSubjectByNameOrAlias, findSubjectByCode } from '../data/curriculum/subjects';
+import { resolveCurriculumContext, resolveSubjectInput } from '../data/curriculum/resolver';
+import { ResolvedCurriculumContext } from '../data/curriculum/types';
 import { getPhaseFromGrade } from '../data/curriculumDefaults';
 
 export type WorkflowStatus = 'BLOCKED' | 'READY' | 'IN_PROGRESS' | 'COMPLETE' | 'STALE';
@@ -50,49 +52,122 @@ export interface AdministrationContext {
   subjectName: string;
   phase?: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
   curriculumResolutionStatus: 'RESOLVED' | 'UNRESOLVED' | 'AMBIGUOUS';
+  resolvedContext?: ResolvedCurriculumContext | null;
+  unresolvedReason?: string;
 }
 
 /**
- * Builds a canonical AdministrationContext from the workspace data.
- * Resolves curriculum status, grade number, phase, and canonical subject code without mutating.
+ * Builds a canonical AdministrationContext from workspace and administrative inputs.
+ * Strictly avoids fake fallbacks. If any mandatory parameter is missing or invalid,
+ * curriculumResolutionStatus is set to 'UNRESOLVED'.
+ * Integrates directly with resolveCurriculumContext from PATCH A as single source of truth.
  */
 export function buildAdministrationContext(data: {
-  workspace?: AdministrationWorkspace;
-  profile: TeacherProfile;
-  school: SchoolData;
-  academicSetting: AcademicSetting;
+  workspace?: AdministrationWorkspace | null;
+  profile?: TeacherProfile | null;
+  school?: SchoolData | null;
+  academicSetting?: AcademicSetting | null;
 }): AdministrationContext {
   const { workspace, profile, school, academicSetting } = data;
 
-  const curriculumType: CurriculumType = isK13(academicSetting) ? 'K13' : 'KURIKULUM_MERDEKA';
-  const level = (academicSetting.level || profile.defaultLevel || 'SD') as 'SD' | 'SMP' | 'SMA' | 'SMK';
-  const rawGrade = academicSetting.grade || 'Kelas 1';
-  const gradeNum = parseInt(rawGrade.replace(/[^0-9]/g, ''), 10) || 1;
-  const phase = getPhaseFromGrade(level, rawGrade).replace('Fase ', '') as 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  const curriculumType: CurriculumType = academicSetting
+    ? isK13(academicSetting)
+      ? 'K13'
+      : 'KURIKULUM_MERDEKA'
+    : 'KURIKULUM_MERDEKA';
 
-  const semVal: 1 | 2 = academicSetting.semester?.startsWith('2') ? 2 : 1;
-  const rawSubject = academicSetting.subject || profile.defaultSubject || 'Bahasa Indonesia';
+  // Extract raw inputs without injecting false default values
+  const schoolId = school?.id || profile?.schoolId || '';
+  const teacherProfileId = profile?.id || '';
+  const workspaceId = workspace?.id || (academicSetting?.id ? `ws-${academicSetting.id}` : '');
+  const academicYear = academicSetting?.academicYear?.trim() || '';
+  const semester: 1 | 2 = academicSetting?.semester?.startsWith('2') ? 2 : 1;
 
-  // Resolve canonical subject code using curriculum master
-  const resolvedSubject = findSubjectByNameOrAlias(rawSubject) || findSubjectByCode(rawSubject);
-  const subjectCode = resolvedSubject?.code || rawSubject;
-  const subjectName = resolvedSubject?.name || rawSubject;
-  const curriculumResolutionStatus: 'RESOLVED' | 'UNRESOLVED' | 'AMBIGUOUS' = resolvedSubject ? 'RESOLVED' : 'UNRESOLVED';
+  const rawLevel = (academicSetting?.level || profile?.defaultLevel || '').trim() as 'SD' | 'SMP' | 'SMA' | 'SMK';
+  const rawGrade = (academicSetting?.grade || '').trim();
+  const rawSubject = (academicSetting?.subject || profile?.defaultSubject || '').trim();
+
+  // Parse grade number
+  const gradeMatch = rawGrade.match(/\d+/);
+  const gradeNum = gradeMatch ? parseInt(gradeMatch[0], 10) : 0;
+
+  // Check validity of mandatory fields
+  const isSchoolMissing = !schoolId;
+  const isAcademicYearMissing = !academicYear;
+  const isSubjectMissing = !rawSubject;
+  const isGradeMissing = !rawGrade || gradeNum < 1 || gradeNum > 12;
+  const isLevelMissing = !rawLevel;
+  const isSMKUnsupported = rawLevel === 'SMK';
+
+  let curriculumResolutionStatus: 'RESOLVED' | 'UNRESOLVED' | 'AMBIGUOUS' = 'UNRESOLVED';
+  let resolvedContext: ResolvedCurriculumContext | null = null;
+  let unresolvedReason: string | undefined = undefined;
+  let subjectCode = '';
+  let subjectName = rawSubject;
+  let phase: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | undefined = undefined;
+
+  if (isSchoolMissing) {
+    unresolvedReason = 'Data satuan pendidikan (sekolah) belum dipilih atau belum lengkap.';
+  } else if (isAcademicYearMissing) {
+    unresolvedReason = 'Tahun ajaran belum diisi.';
+  } else if (isLevelMissing) {
+    unresolvedReason = 'Jenjang pendidikan (SD/SMP/SMA) belum dipilih.';
+  } else if (isSMKUnsupported) {
+    unresolvedReason = 'Jenjang SMK saat ini belum didukung dalam resolusi kurikulum standar.';
+  } else if (isGradeMissing) {
+    unresolvedReason = `Tingkat/kelas '${rawGrade}' tidak valid atau di luar rentang (1-12).`;
+  } else if (isSubjectMissing) {
+    unresolvedReason = 'Mata pelajaran belum diisi.';
+  } else {
+    // Resolve via Canonical Curriculum Resolver PATCH A
+    const resolution = resolveCurriculumContext({
+      curriculumType,
+      academicYear,
+      level: rawLevel,
+      grade: gradeNum,
+      subjectInput: rawSubject,
+    });
+
+    if (resolution) {
+      resolvedContext = resolution;
+      subjectCode = resolution.subject.code;
+      subjectName = resolution.subject.name;
+      phase = resolution.phase as 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+      curriculumResolutionStatus = resolution.isAmbiguous ? 'AMBIGUOUS' : 'RESOLVED';
+    } else {
+      unresolvedReason = `Struktur kurikulum tidak ditemukan untuk mata pelajaran '${rawSubject}' pada jenjang ${rawLevel} Kelas ${gradeNum}.`;
+      curriculumResolutionStatus = 'UNRESOLVED';
+    }
+  }
+
+  // If subject was not resolved through canonical curriculum structure, normalize code for display/fallback
+  if (!subjectCode && rawSubject) {
+    const subRes = resolveSubjectInput(rawSubject);
+    subjectCode = subRes.subjectCode || rawSubject;
+    subjectName = subRes.subject?.name || rawSubject;
+  }
+
+  // Derive phase if grade is valid even when curriculum structure is unresolved
+  if (!phase && gradeNum >= 1 && gradeNum <= 12 && rawLevel && rawLevel !== 'SMK') {
+    phase = getPhaseFromGrade(rawLevel, rawGrade).replace('Fase ', '') as 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  }
 
   return {
-    workspaceId: workspace?.id || `ws-${academicSetting.id}`,
-    teacherProfileId: profile.id,
-    schoolId: school.id || profile.schoolId || 'sch-default-1',
-    academicYear: academicSetting.academicYear || '2025/2026',
-    semester: semVal,
+    workspaceId,
+    teacherProfileId,
+    schoolId,
+    academicYear,
+    semester,
     curriculumType,
-    level,
+    level: rawLevel || ('' as any),
     grade: gradeNum,
     rawGrade,
-    subjectCode,
-    subjectName,
+    subjectCode: subjectCode || rawSubject,
+    subjectName: subjectName || rawSubject,
     phase,
     curriculumResolutionStatus,
+    resolvedContext,
+    unresolvedReason,
   };
 }
 
@@ -110,6 +185,13 @@ export interface DependencyValidationReport {
   hasStaleModules: boolean;
   issues: DependencyValidationIssue[];
   stepStates: Record<WorkflowStepId, WorkflowStepState>;
+  kktpState?: {
+    status: WorkflowStatus;
+    isBlocked: boolean;
+    isComplete: boolean;
+    isStale: boolean;
+    hasOrphans: boolean;
+  };
 }
 
 /**
@@ -198,6 +280,20 @@ export function validateWorkflowDependencies(
     });
     stepStates.academic.isBlocked = !stepStates.profile.isComplete;
   }
+
+  let kktpState: {
+    status: WorkflowStatus;
+    isBlocked: boolean;
+    isComplete: boolean;
+    isStale: boolean;
+    hasOrphans: boolean;
+  } = {
+    status: 'BLOCKED',
+    isBlocked: true,
+    isComplete: false,
+    isStale: false,
+    hasOrphans: false,
+  };
 
   if (isK13Active) {
     // ==========================================
@@ -371,13 +467,14 @@ export function validateWorkflowDependencies(
     const seenSequences = new Set<number>();
 
     atpItems.forEach((atpItem) => {
-      if (atpItem.tpId && !validTpIds.has(atpItem.tpId)) {
+      // An ATP item MUST have a valid tpId pointing to canonical TP
+      if (!atpItem.tpId || !validTpIds.has(atpItem.tpId)) {
         hasOrphanATPItem = true;
         issues.push({
           severity: 'ERROR',
           module: 'atp',
           code: 'ORPHAN_ATP_TP_ID',
-          message: `Item ATP merujuk ke tpId '${atpItem.tpId}' yang tidak ditemukan pada daftar TP canonical.`,
+          message: `Item ATP '${atpItem.id}' tidak terhubung ke TP canonical (tpId: '${atpItem.tpId || 'kosong'}').`,
           targetId: atpItem.id,
         });
       }
@@ -432,19 +529,27 @@ export function validateWorkflowDependencies(
       });
     }
 
-    // 5. KKTP Validation (References canonical tpId)
+    // 5. KKTP Validation (Standalone branch from TP -> KKTP)
+    let hasOrphanCriterion = false;
+    let isKKTPStale = false;
+
     criteria.forEach((crit) => {
-      if (crit.tpId && !validTpIds.has(crit.tpId)) {
+      if (!crit.tpId || !validTpIds.has(crit.tpId)) {
+        hasOrphanCriterion = true;
         issues.push({
           severity: 'ERROR',
           module: 'KKTP',
           code: 'ORPHAN_CRITERIA_TP_ID',
-          message: `Kriteria KKTP merujuk ke TP '${crit.tpId}' yang tidak terdaftar.`,
+          message: `Kriteria KKTP '${crit.id}' merujuk ke tpId '${crit.tpId || 'kosong'}' yang tidak ditemukan dalam daftar TP canonical.`,
           targetId: crit.id,
         });
       }
 
-      if (crit.approach === 'legacy_kkm' && !isK13Active) {
+      if (isTPDataValid && isUpstreamStale(tp?.updatedAt, crit.basedOnTpUpdatedAt)) {
+        isKKTPStale = true;
+      }
+
+      if (crit.approach === 'legacy_kkm') {
         issues.push({
           severity: 'WARNING',
           module: 'KKTP',
@@ -455,19 +560,51 @@ export function validateWorkflowDependencies(
       }
     });
 
+    if (isKKTPStale) {
+      issues.push({
+        severity: 'INFO',
+        module: 'KKTP',
+        code: 'STALE_KKTP',
+        message: 'Tujuan Pembelajaran diperbarui setelah KKTP dirumuskan. Tinjau kembali kriteria ketercapaian.',
+      });
+    }
+
+    const isKKTPBlocked = !isTPDataValid;
+    const isKKTPComplete =
+      isTPDataValid &&
+      criteria.length > 0 &&
+      !hasOrphanCriterion &&
+      criteria.every((c) => (c.indicators && c.indicators.length > 0) || (c.levels && c.levels.length > 0));
+
+    kktpState = {
+      status: isKKTPBlocked
+        ? 'BLOCKED'
+        : isKKTPStale
+        ? 'STALE'
+        : isKKTPComplete
+        ? 'COMPLETE'
+        : criteria.length > 0
+        ? 'IN_PROGRESS'
+        : 'READY',
+      isBlocked: isKKTPBlocked,
+      isComplete: isKKTPComplete,
+      isStale: isKKTPStale,
+      hasOrphans: hasOrphanCriterion,
+    };
+
     // 6. Administrasi Hub Overall Gating
     stepStates.admin = {
       id: 'admin',
       status: isATPComplete ? 'COMPLETE' : isTPDataValid ? 'IN_PROGRESS' : 'BLOCKED',
       isBlocked: !isTPDataValid,
       isComplete: isATPComplete,
-      isStale: isATPStale || isTPStale,
+      isStale: isATPStale || isTPStale || isKKTPStale,
       reason: !isTPDataValid ? 'Memerlukan TP dan Alur ATP untuk modul administrasi lengkap' : undefined,
     };
   }
 
   const hasErrors = issues.some((i) => i.severity === 'ERROR');
-  const hasStaleModules = Object.values(stepStates).some((s) => s.isStale);
+  const hasStaleModules = Object.values(stepStates).some((s) => s.isStale) || kktpState.isStale;
 
   return {
     isValid: !hasErrors,
@@ -475,12 +612,14 @@ export function validateWorkflowDependencies(
     hasStaleModules,
     issues,
     stepStates,
+    kktpState,
   };
 }
 
 /**
  * Resolves canonical display fields for an ATPItem from canonical TP list.
  * If the ATP item has a valid tpId, canonical statement, code, materialScope, and competence are resolved.
+ * If tpId is missing or not found in canonical TP list, isOrphan is strictly marked as true.
  */
 export function resolveATPItemWithTP(
   item: ATPItem,
@@ -493,7 +632,7 @@ export function resolveATPItemWithTP(
   displayMaterialScope: string;
   isOrphan: boolean;
 } {
-  const canonicalTP = tpList.find((t) => t.id === item.tpId) || null;
+  const canonicalTP = item.tpId ? tpList.find((t) => t.id === item.tpId) || null : null;
 
   if (canonicalTP) {
     return {
@@ -506,19 +645,20 @@ export function resolveATPItemWithTP(
     };
   }
 
-  // Backward compatibility / fallback if tpId is missing or unresolved
+  // If item has no tpId or tpId is not in canonical tpList -> ORPHAN
   return {
     item,
     canonicalTP: null,
     displayCode: item.tpCode || `TP ${item.stepNumber || 1}`,
-    displayStatement: item.tpStatement || '(Tujuan Pembelajaran belum terhubung ke canonical TP)',
+    displayStatement: item.tpStatement || '(Tujuan Pembelajaran tidak ditemukan dalam daftar TP)',
     displayMaterialScope: item.materialScope || '-',
-    isOrphan: !!item.tpId,
+    isOrphan: true,
   };
 }
 
 /**
  * Resolves canonical TP or KD for an AssessmentCriterion.
+ * If criterion has no tpId or target is not found in canonical TP/KD list, isOrphan is strictly true.
  */
 export function resolveCriterionTarget(
   criterion: AssessmentCriterion,
@@ -531,31 +671,36 @@ export function resolveCriterionTarget(
   isOrphan: boolean;
 } {
   // Check TP first (Merdeka)
-  const matchedTP = tpList.find((t) => t.id === criterion.tpId);
-  if (matchedTP) {
-    return {
-      targetId: matchedTP.id,
-      targetCode: matchedTP.code || 'TP',
-      targetStatement: matchedTP.statement,
-      isOrphan: false,
-    };
+  if (criterion.tpId) {
+    const matchedTP = tpList.find((t) => t.id === criterion.tpId);
+    if (matchedTP) {
+      return {
+        targetId: matchedTP.id,
+        targetCode: matchedTP.code || 'TP',
+        targetStatement: matchedTP.statement,
+        isOrphan: false,
+      };
+    }
   }
 
   // Check K13 KD
-  const matchedKD = (k13Analysis?.items || []).find((k) => k.id === criterion.tpId);
-  if (matchedKD) {
-    return {
-      targetId: matchedKD.id,
-      targetCode: 'KD',
-      targetStatement: matchedKD.kd,
-      isOrphan: false,
-    };
+  if (criterion.tpId && k13Analysis?.items) {
+    const matchedKD = k13Analysis.items.find((k) => k.id === criterion.tpId);
+    if (matchedKD) {
+      return {
+        targetId: matchedKD.id,
+        targetCode: 'KD',
+        targetStatement: matchedKD.kd,
+        isOrphan: false,
+      };
+    }
   }
 
   return {
     targetId: criterion.tpId || '',
     targetCode: 'UNKNOWN',
-    targetStatement: criterion.description || '(Target TP/KD tidak ditemukan)',
+    targetStatement: criterion.description || '(Target TP/KD tidak ditemukan dalam daftar canonical)',
     isOrphan: true,
   };
 }
+

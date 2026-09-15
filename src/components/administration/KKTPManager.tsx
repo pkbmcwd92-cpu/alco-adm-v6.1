@@ -187,9 +187,10 @@ export const KKTPManager: React.FC<KKTPManagerProps> = ({
       tpId: activeItem.id,
       description: `Kriteria Ketercapaian: ${activeItem.statement}`,
       approach,
-      passingThreshold: approach === 'legacy_kkm' ? calculatedKkm : 75,
+      passingThreshold: approach === 'legacy_kkm' ? calculatedKkm : null,
       indicators,
       levels,
+      basedOnTpUpdatedAt: tp?.updatedAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 

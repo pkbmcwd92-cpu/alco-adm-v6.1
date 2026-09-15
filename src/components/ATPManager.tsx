@@ -102,18 +102,24 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
         totalHoursPerWeek: context.totalHoursPerWeek || 5,
       });
 
-      const formattedItems: ATPItem[] = generated.items.map((item, idx) => ({
-        id: `atp-item-${Date.now()}-${idx}`,
-        stepNumber: item.stepNumber || idx + 1,
-        tpCode: item.tpCode,
-        tpStatement: item.tpStatement,
-        materialScope: item.materialScope,
-        jp: item.jp || 6,
-        p3Dimensions: item.p3Dimensions || ['Bernalar Kritis'],
-        assessmentPlan: item.assessmentPlan || 'Formatif: Unjuk Kerja; Sumatif: Tes Tertulis',
-        glossary: item.glossary || '',
-        resources: item.resources || 'Buku Guru dan Buku Siswa Kemendikdasmen',
-      }));
+      const formattedItems: ATPItem[] = generated.items.map((item, idx) => {
+        const matchedTP = tp.items.find((t) => t.code === item.tpCode || t.statement === item.tpStatement) || tp.items[idx];
+        const resolvedJP = item.jp !== undefined && item.jp !== null ? Number(item.jp) : null;
+        return {
+          id: `atp-item-${Date.now()}-${idx}`,
+          stepNumber: item.stepNumber || idx + 1,
+          tpId: matchedTP?.id,
+          tpCode: matchedTP?.code || item.tpCode,
+          tpStatement: matchedTP?.statement || item.tpStatement,
+          materialScope: matchedTP?.contentScope || item.materialScope,
+          allocatedJP: resolvedJP,
+          jp: resolvedJP,
+          p3Dimensions: item.p3Dimensions || matchedTP?.p3Dimensions || ['Bernalar Kritis'],
+          assessmentPlan: item.assessmentPlan || 'Formatif: Unjuk Kerja; Sumatif: Tes Tertulis',
+          glossary: item.glossary || '',
+          resources: item.resources || 'Buku Guru dan Buku Siswa Kemendikdasmen',
+        };
+      });
 
       setRationale(generated.rationale);
       setItems(formattedItems);
@@ -124,7 +130,7 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
         academicSettingId: academicSetting.id,
         rationale: generated.rationale,
         items: formattedItems,
-        totalJP: formattedItems.reduce((acc, curr) => acc + (Number(curr.jp) || 0), 0),
+        totalJP: formattedItems.reduce((acc, curr) => acc + (Number(curr.allocatedJP ?? curr.jp) || 0), 0),
         basedOnTpUpdatedAt: tp.updatedAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -182,14 +188,16 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
   const handleOpenAdd = () => {
     const nextStep = items.length + 1;
     const firstTP = tp.items[0];
-    const gradeNum = context.grade.replace(/[^0-9]/g, '') || '4';
+    const gradeNum = context.grade.replace(/[^0-9]/g, '');
     setCurrentItem({
       id: `atp-${Date.now()}`,
       stepNumber: nextStep,
-      tpCode: firstTP?.code || `TP ${gradeNum}.${nextStep}`,
+      tpId: firstTP?.id || '',
+      tpCode: firstTP?.code || (gradeNum ? `TP ${gradeNum}.${nextStep}` : `TP ${nextStep}`),
       tpStatement: firstTP?.statement || '',
       materialScope: firstTP?.contentScope || '',
-      jp: 6,
+      allocatedJP: null,
+      jp: null as any,
       p3Dimensions: firstTP?.p3Dimensions || ['Bernalar Kritis', 'Mandiri'],
       assessmentPlan: 'Formatif: Pengamatan unjuk kerja; Sumatif: Penilaian akhir lingkup materi',
       glossary: '',
@@ -398,81 +406,97 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
-                {items.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="p-3 text-center font-bold text-slate-700 bg-slate-50/50">
-                      {idx + 1}
-                    </td>
-                    <td className="p-3 font-mono font-bold text-blue-900 whitespace-nowrap">
-                      {item.tpCode}
-                    </td>
-                    <td className="p-3 font-medium text-slate-900 leading-relaxed">
-                      {item.tpStatement}
-                      {item.glossary && (
-                        <div className="text-[11px] text-slate-500 mt-1">
-                          <span className="font-semibold text-slate-700">Glosarium:</span> {item.glossary}
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-3 text-slate-700 font-semibold">{item.materialScope || '-'}</td>
-                    <td className="p-3 text-blue-800">
-                      {item.p3Dimensions && item.p3Dimensions.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {item.p3Dimensions.map((d, di) => (
-                            <span
-                              key={di}
-                              className="px-1.5 py-0.5 rounded bg-blue-50 text-[10px] font-medium text-blue-700 border border-blue-100"
-                            >
-                              {d}
+                {items.map((item, idx) => {
+                  const isOrphan = !item.tpId || !tp.items.some((t) => t.id === item.tpId);
+                  const displayJP = item.allocatedJP !== undefined && item.allocatedJP !== null
+                    ? `${item.allocatedJP} JP`
+                    : item.jp !== undefined && item.jp !== null
+                    ? `${item.jp} JP`
+                    : '-';
+
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-3 text-center font-bold text-slate-700 bg-slate-50/50">
+                        {idx + 1}
+                      </td>
+                      <td className="p-3 font-mono font-bold text-blue-900 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          <span>{item.tpCode || `TP ${idx + 1}`}</span>
+                          {isOrphan && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                              Orphan TP
                             </span>
-                          ))}
+                          )}
                         </div>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="p-3 text-slate-600 text-[11px] leading-relaxed">
-                      {item.assessmentPlan || '-'}
-                    </td>
-                    <td className="p-3 text-center font-bold text-slate-900 bg-slate-50/50">
-                      {item.jp} JP
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => handleMove(idx, 'up')}
-                          disabled={idx === 0}
-                          className="p-1 text-slate-400 hover:text-slate-700 rounded transition disabled:opacity-20"
-                          title="Geser naik"
-                        >
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleMove(idx, 'down')}
-                          disabled={idx === items.length - 1}
-                          className="p-1 text-slate-400 hover:text-slate-700 rounded transition disabled:opacity-20"
-                          title="Geser turun"
-                        >
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-1 text-slate-400 hover:text-blue-600 rounded transition"
-                          title="Edit baris ATP"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="p-1 text-slate-400 hover:text-rose-600 rounded transition"
-                          title="Hapus baris"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-3 font-medium text-slate-900 leading-relaxed">
+                        {item.tpStatement}
+                        {item.glossary && (
+                          <div className="text-[11px] text-slate-500 mt-1">
+                            <span className="font-semibold text-slate-700">Glosarium:</span> {item.glossary}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-slate-700 font-semibold">{item.materialScope || '-'}</td>
+                      <td className="p-3 text-blue-800">
+                        {item.p3Dimensions && item.p3Dimensions.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {item.p3Dimensions.map((d, di) => (
+                              <span
+                                key={di}
+                                className="px-1.5 py-0.5 rounded bg-blue-50 text-[10px] font-medium text-blue-700 border border-blue-100"
+                              >
+                                {d}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="p-3 text-slate-600 text-[11px] leading-relaxed">
+                        {item.assessmentPlan || '-'}
+                      </td>
+                      <td className="p-3 text-center font-bold text-slate-900 bg-slate-50/50">
+                        {displayJP}
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleMove(idx, 'up')}
+                            disabled={idx === 0}
+                            className="p-1 text-slate-400 hover:text-slate-700 rounded transition disabled:opacity-20"
+                            title="Geser naik"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleMove(idx, 'down')}
+                            disabled={idx === items.length - 1}
+                            className="p-1 text-slate-400 hover:text-slate-700 rounded transition disabled:opacity-20"
+                            title="Geser turun"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className="p-1 text-slate-400 hover:text-blue-600 rounded transition"
+                            title="Edit baris ATP"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="p-1 text-slate-400 hover:text-rose-600 rounded transition"
+                            title="Hapus baris"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
               <tfoot>
                 <tr className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300">
@@ -536,6 +560,43 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
             </div>
 
             <form onSubmit={handleSaveItemModal} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Rujukan Tujuan Pembelajaran (Canonical TP) <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  required
+                  value={currentItem.tpId || ''}
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    const selectedTP = tp.items.find((t) => t.id === selId);
+                    if (selectedTP) {
+                      setCurrentItem({
+                        ...currentItem,
+                        tpId: selectedTP.id,
+                        tpCode: selectedTP.code,
+                        tpStatement: selectedTP.statement,
+                        materialScope: selectedTP.contentScope || currentItem.materialScope,
+                        p3Dimensions: selectedTP.p3Dimensions || currentItem.p3Dimensions,
+                      });
+                    } else {
+                      setCurrentItem({
+                        ...currentItem,
+                        tpId: '',
+                      });
+                    }
+                  }}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-blue-600 bg-white font-medium text-slate-800"
+                >
+                  <option value="">-- Pilih Tujuan Pembelajaran Resmi --</option>
+                  {tp.items.map((t, tIdx) => (
+                    <option key={t.id} value={t.id}>
+                      {t.code || `TP ${tIdx + 1}`}: {t.statement.length > 80 ? `${t.statement.slice(0, 80)}...` : t.statement}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
@@ -558,9 +619,9 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
                   </label>
                   <input
                     type="text"
-                    required
-                    value={currentItem.tpCode}
+                    value={currentItem.tpCode || ''}
                     onChange={(e) => setCurrentItem({ ...currentItem, tpCode: e.target.value })}
+                    placeholder="Contoh: TP 1.1"
                     className="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
@@ -571,11 +632,17 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
                   <input
                     type="number"
                     min="1"
-                    required
-                    value={currentItem.jp}
-                    onChange={(e) =>
-                      setCurrentItem({ ...currentItem, jp: parseInt(e.target.value, 10) || 4 })
-                    }
+                    value={currentItem.allocatedJP ?? currentItem.jp ?? ''}
+                    placeholder="Opsional"
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                      const resolved = val === null || isNaN(val) ? null : val;
+                      setCurrentItem({
+                        ...currentItem,
+                        jp: resolved as any,
+                        allocatedJP: resolved,
+                      });
+                    }}
                     className="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                   />
                 </div>

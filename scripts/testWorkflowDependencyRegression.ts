@@ -294,6 +294,179 @@ if (resolvedCrit.targetId === 'tp-item-1' && !resolvedCrit.isOrphan) {
   process.exit(1);
 }
 
+// ===========================================================
+// PATCH B.1 REGRESSION TESTS
+// ===========================================================
+console.log('--- 7. PATCH B.1: No-Assumption AdministrationContext ---');
+
+// 7a. Missing Academic Year -> UNRESOLVED
+const contextMissingYear = buildAdministrationContext({
+  profile: mockProfile,
+  school: mockSchool,
+  academicSetting: { ...mockAcademic, academicYear: '' },
+});
+if (contextMissingYear.curriculumResolutionStatus === 'UNRESOLVED') {
+  console.log('✅ AcademicYear kosong -> UNRESOLVED (No fake assumption)');
+} else {
+  console.error('❌ Expected UNRESOLVED for missing academicYear', contextMissingYear);
+  process.exit(1);
+}
+
+// 7b. Missing Subject -> UNRESOLVED
+const contextMissingSubject = buildAdministrationContext({
+  profile: { ...mockProfile, defaultSubject: '' },
+  school: mockSchool,
+  academicSetting: { ...mockAcademic, subject: '' },
+});
+if (contextMissingSubject.curriculumResolutionStatus === 'UNRESOLVED') {
+  console.log('✅ Subject kosong -> UNRESOLVED (No fake assumption)');
+} else {
+  console.error('❌ Expected UNRESOLVED for missing subject', contextMissingSubject);
+  process.exit(1);
+}
+
+// 7c. Missing Grade -> UNRESOLVED
+const contextMissingGrade = buildAdministrationContext({
+  profile: mockProfile,
+  school: mockSchool,
+  academicSetting: { ...mockAcademic, grade: '' },
+});
+if (contextMissingGrade.curriculumResolutionStatus === 'UNRESOLVED') {
+  console.log('✅ Grade kosong -> UNRESOLVED (No fake assumption)');
+} else {
+  console.error('❌ Expected UNRESOLVED for missing grade', contextMissingGrade);
+  process.exit(1);
+}
+
+// 7d. Missing School -> UNRESOLVED
+const contextMissingSchool = buildAdministrationContext({
+  profile: { ...mockProfile, schoolId: '' },
+  school: null,
+  academicSetting: mockAcademic,
+});
+if (contextMissingSchool.curriculumResolutionStatus === 'UNRESOLVED') {
+  console.log('✅ School kosong -> UNRESOLVED (No fake assumption)');
+} else {
+  console.error('❌ Expected UNRESOLVED for missing school', contextMissingSchool);
+  process.exit(1);
+}
+
+// 7e. SMK Level -> UNRESOLVED
+const contextSMK = buildAdministrationContext({
+  profile: mockProfile,
+  school: mockSchool,
+  academicSetting: { ...mockAcademic, level: 'SMK', grade: 'Kelas 10' },
+});
+if (contextSMK.curriculumResolutionStatus === 'UNRESOLVED') {
+  console.log('✅ Jenjang SMK -> UNRESOLVED (Unsupported)');
+} else {
+  console.error('❌ Expected UNRESOLVED for SMK', contextSMK);
+  process.exit(1);
+}
+
+console.log('--- 8. PATCH B.1: Orphan ATP & KKTP Validation ---');
+
+// 8a. Orphan ATP Item (tpId not in TP list)
+const orphanATP: ATPData = {
+  id: 'atp-orphan',
+  academicSettingId: 'acad-001',
+  items: [{
+    id: 'atp-item-orphan',
+    stepNumber: 1,
+    tpId: 'tp-non-existent-999',
+    tpCode: 'TP 999',
+    tpStatement: 'TP Fiktif',
+    materialScope: 'Fiktif',
+    allocatedJP: null,
+  }],
+  updatedAt: new Date().toISOString(),
+};
+
+const reportOrphanATP = validateWorkflowDependencies({
+  profile: mockProfile,
+  school: mockSchool,
+  academicSetting: mockAcademic,
+  cp: validCP,
+  cpAnalysis: validAnalysis,
+  tp: validTP,
+  atp: orphanATP,
+});
+
+const hasOrphanATPIssue = reportOrphanATP.issues.some((i) => i.code === 'ORPHAN_ATP_TP_ID');
+if (hasOrphanATPIssue && !reportOrphanATP.stepStates.atp.isComplete) {
+  console.log('✅ Item ATP dengan tpId fiktif ditolak dan ditandai ORPHAN_ATP_TP_ID');
+} else {
+  console.error('❌ Expected orphan ATP error', reportOrphanATP);
+  process.exit(1);
+}
+
+// 8b. Orphan KKTP Criterion
+const orphanCriterion: AssessmentCriterion = {
+  id: 'crit-orphan',
+  academicSettingId: 'acad-001',
+  tpId: 'tp-non-existent-888',
+  description: 'KKTP Fiktif',
+  approach: 'rubrik',
+  indicators: ['Indikator Fiktif'],
+  levels: [],
+  updatedAt: new Date().toISOString(),
+};
+
+const reportOrphanKKTP = validateWorkflowDependencies({
+  profile: mockProfile,
+  school: mockSchool,
+  academicSetting: mockAcademic,
+  cp: validCP,
+  cpAnalysis: validAnalysis,
+  tp: validTP,
+  assessmentCriteria: [orphanCriterion],
+});
+
+const hasOrphanKKTPIssue = reportOrphanKKTP.issues.some((i) => i.code === 'ORPHAN_CRITERIA_TP_ID');
+if (hasOrphanKKTPIssue && reportOrphanKKTP.kktpState?.hasOrphans) {
+  console.log('✅ Kriteria KKTP dengan tpId fiktif ditandai ORPHAN_CRITERIA_TP_ID');
+} else {
+  console.error('❌ Expected orphan KKTP error', reportOrphanKKTP);
+  process.exit(1);
+}
+
+console.log('--- 9. PATCH B.1: TP Stale Propagation to KKTP & ATP ---');
+const staleCriteria: AssessmentCriterion = {
+  id: 'crit-stale',
+  academicSettingId: 'acad-001',
+  tpId: 'tp-item-1',
+  description: 'Kriteria KKTP',
+  approach: 'rubrik',
+  indicators: ['Indikator 1'],
+  levels: [],
+  basedOnTpUpdatedAt: new Date('2026-01-04T00:00:00Z').toISOString(), // Earlier than validTP.updatedAt (2026-01-04T00:00:00Z + delta)
+  updatedAt: new Date('2026-01-04T00:00:00Z').toISOString(),
+};
+
+// Simulate TP update
+const updatedTP: TPData = {
+  ...validTP,
+  updatedAt: new Date('2026-01-08T00:00:00Z').toISOString(),
+};
+
+const reportStaleTP = validateWorkflowDependencies({
+  profile: mockProfile,
+  school: mockSchool,
+  academicSetting: mockAcademic,
+  cp: validCP,
+  cpAnalysis: validAnalysis,
+  tp: updatedTP,
+  atp: validATP,
+  assessmentCriteria: [staleCriteria],
+});
+
+if (reportStaleTP.stepStates.atp.isStale && reportStaleTP.kktpState?.isStale) {
+  console.log('✅ Pembaruan TP menyebarkan status STALE secara serentak ke ATP dan KKTP');
+} else {
+  console.error('❌ Expected stale propagation to ATP & KKTP', reportStaleTP);
+  process.exit(1);
+}
+
 console.log('===========================================================');
-console.log('🎉 ALL WORKFLOW & DEPENDENCY TESTS (PATCH B) PASSED 100%!');
+console.log('🎉 ALL WORKFLOW & DEPENDENCY TESTS (PATCH B & B.1) PASSED 100%!');
 console.log('===========================================================');
