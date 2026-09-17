@@ -83,9 +83,9 @@ export function buildAdministrationContext(data: {
   const academicYear = academicSetting?.academicYear?.trim() || '';
   const semester: 1 | 2 = academicSetting?.semester?.startsWith('2') ? 2 : 1;
 
-  const rawLevel = (academicSetting?.level || profile?.defaultLevel || '').trim() as 'SD' | 'SMP' | 'SMA' | 'SMK';
+  const rawLevel = (academicSetting?.level?.trim() || '') as 'SD' | 'SMP' | 'SMA' | 'SMK';
   const rawGrade = (academicSetting?.grade || '').trim();
-  const rawSubject = (academicSetting?.subject || profile?.defaultSubject || '').trim();
+  const rawSubject = academicSetting?.subject?.trim() || '';
 
   // Parse grade number
   const gradeMatch = rawGrade.match(/\d+/);
@@ -660,6 +660,54 @@ export function resolveATPItemWithTP(
  * Resolves canonical TP or KD for an AssessmentCriterion.
  * If criterion has no tpId or target is not found in canonical TP/KD list, isOrphan is strictly true.
  */
+/**
+ * Matches an ATP item or input to a canonical TP item in the TP list according to PATCH B.2 rules:
+ * 1. Exact tpId match
+ * 2. Exact unique tpCode match (only if matches.length === 1)
+ * 3. Exact unique statement match (only if matches.length === 1)
+ * 4. Otherwise -> null (UNRESOLVED / ORPHAN; ambiguous matches are NOT chosen)
+ * Strictly NO positional matching (no index-based fallback).
+ * Strictly NO first-item fallback.
+ */
+export function matchCanonicalTP(
+  item: { tpId?: string; tpCode?: string; tpStatement?: string },
+  tpList: TPItem[]
+): TPItem | null {
+  if (!tpList || tpList.length === 0) return null;
+
+  // 1. Exact tpId match
+  if (item.tpId && item.tpId.trim()) {
+    const matched = tpList.find((t) => t.id === item.tpId?.trim());
+    if (matched) return matched;
+  }
+
+  // 2. Exact unique tpCode match
+  if (item.tpCode && item.tpCode.trim()) {
+    const trimmedCode = item.tpCode.trim();
+    const codeCandidates = tpList.filter((t) => t.code && t.code.trim() === trimmedCode);
+    if (codeCandidates.length === 1) {
+      return codeCandidates[0];
+    }
+    if (codeCandidates.length > 1) {
+      return null; // Ambiguous: do NOT pick first match
+    }
+  }
+
+  // 3. Exact unique statement match
+  if (item.tpStatement && item.tpStatement.trim()) {
+    const trimmedStatement = item.tpStatement.trim();
+    const statementCandidates = tpList.filter((t) => t.statement && t.statement.trim() === trimmedStatement);
+    if (statementCandidates.length === 1) {
+      return statementCandidates[0];
+    }
+    if (statementCandidates.length > 1) {
+      return null; // Ambiguous: do NOT pick first match
+    }
+  }
+
+  return null;
+}
+
 export function resolveCriterionTarget(
   criterion: AssessmentCriterion,
   tpList: TPItem[],

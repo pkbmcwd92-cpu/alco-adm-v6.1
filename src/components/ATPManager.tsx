@@ -22,6 +22,7 @@ import {
 import { ATPData, ATPItem, TPData, CPData, AcademicSetting, TeacherProfile, ActiveContext } from '../types';
 import { generateATPWithAI, refineTextWithAI } from '../services/aiService';
 import { P3_DIMENSIONS } from '../data/curriculumDefaults';
+import { matchCanonicalTP } from '../services/workflowEngine';
 
 interface ATPManagerProps {
   atp: ATPData;
@@ -99,25 +100,34 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
         phase: context.phase,
         semester: context.semester,
         academicYear: context.academicYear,
-        totalHoursPerWeek: context.totalHoursPerWeek || 5,
+        totalHoursPerWeek: context.totalHoursPerWeek,
       });
 
       const formattedItems: ATPItem[] = generated.items.map((item, idx) => {
-        const matchedTP = tp.items.find((t) => t.code === item.tpCode || t.statement === item.tpStatement) || tp.items[idx];
-        const resolvedJP = item.jp !== undefined && item.jp !== null ? Number(item.jp) : null;
+        const matchedTP = matchCanonicalTP(item, tp.items);
+        const resolvedJP = item.allocatedJP !== undefined && item.allocatedJP !== null
+          ? Number(item.allocatedJP)
+          : item.jp !== undefined && item.jp !== null
+          ? Number(item.jp)
+          : null;
+
         return {
           id: `atp-item-${Date.now()}-${idx}`,
           stepNumber: item.stepNumber || idx + 1,
-          tpId: matchedTP?.id,
-          tpCode: matchedTP?.code || item.tpCode,
-          tpStatement: matchedTP?.statement || item.tpStatement,
-          materialScope: matchedTP?.contentScope || item.materialScope,
+          tpId: matchedTP ? matchedTP.id : '',
+          tpCode: matchedTP ? (matchedTP.code || item.tpCode || '') : (item.tpCode || ''),
+          tpStatement: matchedTP ? matchedTP.statement : (item.tpStatement || ''),
+          materialScope: matchedTP ? (matchedTP.contentScope || '') : (item.materialScope || ''),
           allocatedJP: resolvedJP,
           jp: resolvedJP,
-          p3Dimensions: item.p3Dimensions || matchedTP?.p3Dimensions || ['Bernalar Kritis'],
-          assessmentPlan: item.assessmentPlan || 'Formatif: Unjuk Kerja; Sumatif: Tes Tertulis',
+          p3Dimensions: item.p3Dimensions && item.p3Dimensions.length > 0
+            ? item.p3Dimensions
+            : matchedTP?.p3Dimensions && matchedTP.p3Dimensions.length > 0
+            ? matchedTP.p3Dimensions
+            : [],
+          assessmentPlan: item.assessmentPlan || '',
           glossary: item.glossary || '',
-          resources: item.resources || 'Buku Guru dan Buku Siswa Kemendikdasmen',
+          resources: item.resources || '',
         };
       });
 
@@ -187,21 +197,19 @@ export const ATPManager: React.FC<ATPManagerProps> = ({
 
   const handleOpenAdd = () => {
     const nextStep = items.length + 1;
-    const firstTP = tp.items[0];
-    const gradeNum = context.grade.replace(/[^0-9]/g, '');
     setCurrentItem({
       id: `atp-${Date.now()}`,
       stepNumber: nextStep,
-      tpId: firstTP?.id || '',
-      tpCode: firstTP?.code || (gradeNum ? `TP ${gradeNum}.${nextStep}` : `TP ${nextStep}`),
-      tpStatement: firstTP?.statement || '',
-      materialScope: firstTP?.contentScope || '',
+      tpId: '',
+      tpCode: '',
+      tpStatement: '',
+      materialScope: '',
       allocatedJP: null,
       jp: null as any,
-      p3Dimensions: firstTP?.p3Dimensions || ['Bernalar Kritis', 'Mandiri'],
-      assessmentPlan: 'Formatif: Pengamatan unjuk kerja; Sumatif: Penilaian akhir lingkup materi',
+      p3Dimensions: [],
+      assessmentPlan: '',
       glossary: '',
-      resources: 'Buku Siswa & Guru Kemendikdasmen',
+      resources: '',
     });
     setIsEditing(true);
   };

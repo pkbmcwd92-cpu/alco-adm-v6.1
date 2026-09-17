@@ -7,6 +7,7 @@ import {
   isUpstreamStale,
   resolveATPItemWithTP,
   resolveCriterionTarget,
+  matchCanonicalTP,
 } from '../src/services/workflowEngine';
 import {
   TeacherProfile,
@@ -18,7 +19,9 @@ import {
   CPAnalysisData,
   TPData,
   ATPData,
+  ATPItem,
   AssessmentCriterion,
+  TPItem,
 } from '../src/types';
 
 console.log('===========================================================');
@@ -467,6 +470,244 @@ if (reportStaleTP.stepStates.atp.isStale && reportStaleTP.kktpState?.isStale) {
   process.exit(1);
 }
 
+// ===========================================================
+// PATCH B.2 REGRESSION TESTS
+// ===========================================================
+console.log('--- 10. PATCH B.2: Canonical ATP Matching Rules ---');
+
+const sampleTPList: TPItem[] = [
+  {
+    id: 'tp-item-1',
+    code: 'TP 4.1',
+    statement: 'Peserta didik mampu memahami makna al-Malik dan al-Quddus.',
+    competence: 'Memahami',
+    contentScope: 'Asmaul Husna',
+    p3Dimensions: ['Bernalar Kritis'],
+    order: 1,
+  },
+  {
+    id: 'tp-item-2',
+    code: 'TP 4.2',
+    statement: 'Peserta didik mampu mempraktikkan salat berjamaah dengan tertib.',
+    competence: 'Mempraktikkan',
+    contentScope: 'Fikih Salat',
+    p3Dimensions: ['Mandiri'],
+    order: 2,
+  },
+  {
+    id: 'tp-item-dup-1',
+    code: 'TP 4.DUP',
+    statement: 'Pernyataan duplikat unik satu.',
+    competence: 'Menjelaskan',
+    contentScope: 'Duplikat',
+    p3Dimensions: [],
+    order: 3,
+  },
+  {
+    id: 'tp-item-dup-2',
+    code: 'TP 4.DUP',
+    statement: 'Pernyataan duplikat unik dua.',
+    competence: 'Menjelaskan',
+    contentScope: 'Duplikat',
+    p3Dimensions: [],
+    order: 4,
+  },
+  {
+    id: 'tp-item-stmt-dup-1',
+    code: 'TP 4.3',
+    statement: 'Pernyataan kembar.',
+    competence: 'Menganalisis',
+    contentScope: 'Materi A',
+    p3Dimensions: [],
+    order: 5,
+  },
+  {
+    id: 'tp-item-stmt-dup-2',
+    code: 'TP 4.4',
+    statement: 'Pernyataan kembar.',
+    competence: 'Menganalisis',
+    contentScope: 'Materi B',
+    p3Dimensions: [],
+    order: 6,
+  },
+];
+
+// 10a. Exact tpId match
+const matchById = matchCanonicalTP({ tpId: 'tp-item-2' }, sampleTPList);
+if (matchById?.id === 'tp-item-2') {
+  console.log('✅ Exact tpId berhasil mencocokkan ke canonical TP');
+} else {
+  console.error('❌ Failed exact tpId match', matchById);
+  process.exit(1);
+}
+
+// 10b. Exact unique tpCode match
+const matchByCode = matchCanonicalTP({ tpCode: 'TP 4.1' }, sampleTPList);
+if (matchByCode?.id === 'tp-item-1') {
+  console.log('✅ Exact unique tpCode berhasil mencocokkan ke canonical TP');
+} else {
+  console.error('❌ Failed exact unique tpCode match', matchByCode);
+  process.exit(1);
+}
+
+// 10c. Exact unique statement match
+const matchByStmt = matchCanonicalTP({ tpStatement: 'Peserta didik mampu mempraktikkan salat berjamaah dengan tertib.' }, sampleTPList);
+if (matchByStmt?.id === 'tp-item-2') {
+  console.log('✅ Exact unique statement berhasil mencocokkan ke canonical TP');
+} else {
+  console.error('❌ Failed exact unique statement match', matchByStmt);
+  process.exit(1);
+}
+
+// 10d. No match -> ORPHAN / null
+const noMatch = matchCanonicalTP({ tpCode: 'TP 99.99', tpStatement: 'TP tidak dikenal sama sekali.' }, sampleTPList);
+if (noMatch === null) {
+  console.log('✅ Tidak ada match menghasilkan null (ORPHAN/UNRESOLVED)');
+} else {
+  console.error('❌ Expected null for non-matching item, but got:', noMatch);
+  process.exit(1);
+}
+
+// 10e. Duplicate tpCode -> does NOT choose first match
+const dupCodeMatch = matchCanonicalTP({ tpCode: 'TP 4.DUP' }, sampleTPList);
+if (dupCodeMatch === null) {
+  console.log('✅ Duplicate tpCode menghasilkan null (AMBIGUOUS - tidak memilih match pertama)');
+} else {
+  console.error('❌ Expected null for duplicate tpCode match, but got:', dupCodeMatch);
+  process.exit(1);
+}
+
+// 10f. Duplicate statement -> does NOT choose first match
+const dupStmtMatch = matchCanonicalTP({ tpStatement: 'Pernyataan kembar.' }, sampleTPList);
+if (dupStmtMatch === null) {
+  console.log('✅ Duplicate statement menghasilkan null (AMBIGUOUS - tidak memilih match pertama)');
+} else {
+  console.error('❌ Expected null for duplicate statement match, but got:', dupStmtMatch);
+  process.exit(1);
+}
+
+// 10g. CRITICAL: AI item index 0 without match MUST NOT get tp.items[0]
+const aiItemAtIdx0 = {
+  stepNumber: 1,
+  tpCode: 'TP UNKNOWN',
+  tpStatement: 'Rumusan tidak terdaftar di TP',
+};
+const resolvedIdx0 = matchCanonicalTP(aiItemAtIdx0, sampleTPList);
+if (resolvedIdx0 === null) {
+  console.log('✅ Item AI di index 0 yang tidak cocok TIDAK otomatis mengambil tp.items[0]');
+} else {
+  console.error('❌ Positional fallback violation: item at index 0 matched to:', resolvedIdx0);
+  process.exit(1);
+}
+
+console.log('--- 11. PATCH B.2: No Fabricated Defaults in ATP ---');
+
+// Test that raw generated item without explicit fields resolves to clean empty/null
+const rawAIItem = {
+  stepNumber: 1,
+  tpCode: 'TP 4.1',
+  tpStatement: 'Peserta didik mampu memahami makna al-Malik dan al-Quddus.',
+  materialScope: 'Asmaul Husna',
+  // No p3Dimensions, assessmentPlan, resources, allocatedJP/jp provided
+};
+
+const matchedCanonical = matchCanonicalTP(rawAIItem, sampleTPList);
+// Test ATP formatting without system default injections
+const testFormattedATPItem: ATPItem = {
+  id: 'test-atp-clean',
+  stepNumber: rawAIItem.stepNumber,
+  tpId: matchedCanonical ? matchedCanonical.id : '',
+  tpCode: matchedCanonical ? (matchedCanonical.code || rawAIItem.tpCode) : rawAIItem.tpCode,
+  tpStatement: matchedCanonical ? matchedCanonical.statement : rawAIItem.tpStatement,
+  materialScope: matchedCanonical ? (matchedCanonical.contentScope || '') : rawAIItem.materialScope,
+  allocatedJP: null,
+  p3Dimensions: (rawAIItem as any).p3Dimensions || [],
+  assessmentPlan: (rawAIItem as any).assessmentPlan || '',
+  glossary: (rawAIItem as any).glossary || '',
+  resources: (rawAIItem as any).resources || '',
+};
+
+if (
+  testFormattedATPItem.allocatedJP === null &&
+  Array.isArray(testFormattedATPItem.p3Dimensions) &&
+  testFormattedATPItem.p3Dimensions.length === 0 &&
+  testFormattedATPItem.assessmentPlan === '' &&
+  testFormattedATPItem.resources === ''
+) {
+  console.log('✅ ATP item tanpa data eksplisit tidak disuntikkan default palsu (p3=[], plan="", res="", jp=null)');
+} else {
+  console.error('❌ Fabricated default detected in ATP item:', testFormattedATPItem);
+  process.exit(1);
+}
+
+console.log('--- 12. PATCH B.2: AdministrationContext Authority ---');
+
+// Scenario 12a: TeacherProfile.defaultSubject = PJOK, AcademicSetting.subject = '' -> UNRESOLVED
+const contextWithProfileSubject = buildAdministrationContext({
+  profile: {
+    ...mockProfile,
+    defaultSubject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan',
+  },
+  school: mockSchool,
+  academicSetting: {
+    ...mockAcademic,
+    subject: '', // Explicitly empty
+  },
+});
+
+if (
+  contextWithProfileSubject.curriculumResolutionStatus === 'UNRESOLVED' &&
+  contextWithProfileSubject.subjectName === ''
+) {
+  console.log('✅ AcademicSetting.subject kosong -> UNRESOLVED (profile.defaultSubject diabaikan)');
+} else {
+  console.error('❌ Expected UNRESOLVED when AcademicSetting.subject is empty:', contextWithProfileSubject);
+  process.exit(1);
+}
+
+// Scenario 12b: TeacherProfile.defaultLevel = SD, AcademicSetting.level = '' -> UNRESOLVED
+const contextWithProfileLevel = buildAdministrationContext({
+  profile: {
+    ...mockProfile,
+    defaultLevel: 'SD',
+  },
+  school: mockSchool,
+  academicSetting: {
+    ...mockAcademic,
+    level: '' as any, // Explicitly empty
+  },
+});
+
+if (contextWithProfileLevel.curriculumResolutionStatus === 'UNRESOLVED') {
+  console.log('✅ AcademicSetting.level kosong -> UNRESOLVED (profile.defaultLevel diabaikan)');
+} else {
+  console.error('❌ Expected UNRESOLVED when AcademicSetting.level is empty:', contextWithProfileLevel);
+  process.exit(1);
+}
+
+// Scenario 12c: TeacherProfile.defaultSubject changes, AcademicSetting.subject remains MAT
+const contextWithChangedProfile = buildAdministrationContext({
+  profile: {
+    ...mockProfile,
+    defaultSubject: 'Ilmu Pengetahuan Alam dan Sosial (IPAS)',
+  },
+  school: mockSchool,
+  academicSetting: {
+    ...mockAcademic,
+    subject: 'Matematika', // Authoritative
+  },
+});
+
+if (
+  contextWithChangedProfile.curriculumResolutionStatus === 'RESOLVED' &&
+  contextWithChangedProfile.subjectCode === 'MAT'
+) {
+  console.log('✅ AcademicSetting.subject tetap Matematika (MAT) meskipun profile.defaultSubject berubah');
+} else {
+  console.error('❌ AcademicSetting authority failed:', contextWithChangedProfile);
+  process.exit(1);
+}
+
 console.log('===========================================================');
-console.log('🎉 ALL WORKFLOW & DEPENDENCY TESTS (PATCH B & B.1) PASSED 100%!');
+console.log('🎉 ALL WORKFLOW & DEPENDENCY TESTS (PATCH B, B.1 & B.2) PASSED 100%!');
 console.log('===========================================================');

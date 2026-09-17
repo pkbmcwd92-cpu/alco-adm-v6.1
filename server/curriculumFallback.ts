@@ -157,6 +157,7 @@ export function fallbackGenerateTP(params: FallbackGenerateTPParams) {
 
 export interface FallbackGenerateATPParams {
   tps: Array<{
+    id?: string;
     code: string;
     statement: string;
     elementName?: string;
@@ -174,31 +175,33 @@ export interface FallbackGenerateATPParams {
 }
 
 export function fallbackGenerateATP(params: FallbackGenerateATPParams) {
-  const subject = params.subject || 'Mata Pelajaran';
-  const grade = params.grade || 'Kelas 4';
-  const phase = params.phase || 'Fase B';
+  const subject = params.subject || '';
+  const grade = params.grade || '';
+  const phase = params.phase || '';
   const tps = params.tps || [];
-
-  const defaultJpPerTp = 6;
 
   const items = tps.map((tp, idx) => {
     const stepNum = idx + 1;
-    const material = tp.contentScope || `Lingkup Materi ${stepNum}: ${tp.elementName || subject}`;
+    const material = tp.contentScope || '';
     return {
       stepNumber: stepNum,
-      tpCode: tp.code || `TP ${idx + 1}`,
-      tpStatement: tp.statement,
+      tpId: tp.id || '',
+      tpCode: tp.code || '',
+      tpStatement: tp.statement || '',
       materialScope: material,
-      jp: defaultJpPerTp,
-      p3Dimensions: tp.p3Dimensions && tp.p3Dimensions.length > 0 ? tp.p3Dimensions : ['Bernalar Kritis', 'Mandiri'],
-      assessmentPlan: `Asesmen Awal (Tes Diagnostik Kognitif), Formatif (Observasi kinerja & Lembar Kerja Peserta Didik), Sumatif (Tes tertulis/unjuk kerja materi ${material})`,
-      glossary: `Konsep, Analisis, Penerapan, Evaluasi, ${subject}`,
-      resources: `Buku Panduan Guru & Siswa ${subject} Kemendikdasmen, LKPD Kontekstual, Media Visual/Digital interaktif`,
+      allocatedJP: null,
+      jp: null as any,
+      p3Dimensions: tp.p3Dimensions && tp.p3Dimensions.length > 0 ? tp.p3Dimensions : [],
+      assessmentPlan: '',
+      glossary: '',
+      resources: '',
     };
   });
 
   return {
-    rationale: `Alur Tujuan Pembelajaran (ATP) disusun secara hierarkis dan spiral, bergerak dari penguasaan konsep dasar konkret menuju aplikasi praktis, analisis kritis, dan penyajian karya mandiri/kolaboratif. Urutan ini memastikan pemahaman bermakna bagi peserta didik pada jenjang ${grade} (${phase}).`,
+    rationale: subject && grade
+      ? `Alur Tujuan Pembelajaran (ATP) untuk ${subject} ${grade} (${phase}).`
+      : 'Alur Tujuan Pembelajaran (ATP).',
     items,
   };
 }
